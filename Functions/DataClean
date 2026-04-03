@@ -57,10 +57,9 @@ df = data_clean(df)
 ##############Code Cell 2#################Prioritization#####################
 
 required_cols = [
-    name_col, email_col, ucpms_col, IDscheme_col,
+    name_col, email_col, ucmps_col, IDscheme_col,
     identifier_col, decision_col, claimed_col,
-    verification_col, notes_col, scopusSite_col
-]
+    verification_col, notes_col]
 
 missing = [col for col in required_cols if col not in df.columns]
 

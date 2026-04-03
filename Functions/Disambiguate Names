@@ -1,0 +1,73 @@
+#AI UPDATE
+
+data = [
+    ("A. Ennamaria B", "AMENTA, Ennamaria B"),
+    ("AMES, James B", "Ames, James"),
+    ("ANDERSON, D", "ANDERSON, Damien"),
+    ("ARMIEN, Anibal G", "Armién, Aníbal Guillermo"),
+    ("JOHNSTON, Warren E", "Johnston, W. R.")
+]
+
+def normalize_format(name):
+    tokens = name.replace(",", " ").split()
+    if len(tokens) >= 2 and len(tokens[0]) == 1:
+        tokens = tokens[1:] + [tokens[0]]
+    return tokens
+
+def disambiguate_names(data):
+    special_characters = {"í": "i", "é": "e", "á": "a", "ó": "o", "ú": "u"}
+    notable_catches = {}
+    matches = []
+
+    for n1, n2 in data:
+        for special, replace in special_characters.items():
+            n1 = n1.replace(special, replace)
+            n2 = n2.replace(special, replace)
+        n1 = n1.replace(".", "").lower()
+        n2 = n2.replace(".", "").lower()
+
+        n1_split = normalize_format(n1)
+        n2_split = normalize_format(n2)
+        print(f"Comparing '{n1_split}' and '{n2_split}'...\n")
+
+        if len(n1_split) == len(n2_split) and len(n1_split) >= 3:
+            if n1_split[-1][:1] != n2_split[-1][:1]:
+                print(f"{n1} and {n2} do not match due to different middle initials.\n")
+                matches.append("0")
+                continue
+
+        if n1_split[0][:1] == n2_split[0][:1] and n1_split[1][:1] == n2_split[1][:1]:
+            if n1_split[0] == n2_split[0]:
+                if n1_split[1] == n2_split[1]:
+                    print(f"{n1} and {n2} match.\n")
+                    matches.append("1")
+                else:
+                    print(f"Notable exception: {n1} and {n2} have matching initials but different last names.\n")
+                    matches.append("0")
+                    notable_catches[(n1, n2)] = f"{len(matches)}last_name_mismatch"
+            else:
+                notable_catches[(n1, n2)] = f"{len(matches)}first_name_mismatch"
+                if n1_split[1] == n2_split[1]:
+                    print(f"{n1} and {n2} match.\n")
+                    matches.append("1")
+        else:
+            print(f"{n1} and {n2} do not match.\n")
+            matches.append("0")
+
+    print(f"matches: {matches}\n")
+    print(f"Notable catches: {notable_catches}\n")
+    return matches
+
+
+def all_correct(matches):
+    match_log = {}
+    for i, m in enumerate(matches):
+        match_log[i] = m
+    if all(m == "1" for m in matches):
+        print("All names match correctly.")
+    else:
+        print("At least one name is incorrect.")
+    print(f"Match Log: {match_log}\n")
+
+
+all_correct(disambiguate_names(data))
