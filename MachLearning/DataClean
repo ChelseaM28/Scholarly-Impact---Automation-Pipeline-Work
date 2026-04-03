@@ -1,0 +1,98 @@
+"""
+Data Cleaning, Prioritization and Features.
+As per the automation plan, this script will complete steps 1-3 of the ML 
+pipeline. Script was written and tested in a Google Collab notebook.
+"""
+
+# Author: Chelsea Momoh
+# Date: 2026-04-01
+# Version: 2.0
+
+################Code Cell 1##################Data Cleanup##################
+#Importing pandas for data cleanup
+
+
+import pandas as pd
+
+df = pd.read_csv('20260401_UserVerified_Test1_v1 copy.csv')
+
+# Clean column names
+df.columns = df.columns.str.strip()
+
+print("Columns in dataset:")
+print(df.columns.tolist())
+
+# Column names
+name_col = 'Name'
+email_col = 'Email'
+ucmps_col = 'UCPMS Profile link'
+IDscheme_col = 'Identifier scheme'
+identifier_col = 'Identifier'
+decision_col = 'Decision'
+claimed_col = 'Claimed'
+verification_col = 'Correct ID'
+notes_col = 'Notes'
+
+def data_clean(df):
+    df = df.fillna("NaN").astype(str)
+
+    # Strip whitespace properly
+    df[name_col] = df[name_col].str.strip()
+    df[email_col] = df[email_col].str.strip()
+    df[ucmps_col] = df[ucmps_col].str.strip()
+    df[IDscheme_col] = df[IDscheme_col].str.strip()
+    df[identifier_col] = df[identifier_col].str.strip()
+    df[decision_col] = df[decision_col].str.strip()
+    df[claimed_col] = df[claimed_col].str.strip()
+    df[verification_col] = df[verification_col].str.strip()
+
+    df.to_csv('20260401_GENERATED_Test1_v5 copy.csv', index=False)
+    print("Cleaned data exported.")
+
+    return df
+
+df = data_clean(df)
+
+
+##############Code Cell 2#################Prioritization#####################
+
+required_cols = [
+    name_col, email_col, ucpms_col, IDscheme_col,
+    identifier_col, decision_col, claimed_col,
+    verification_col, notes_col, scopusSite_col
+]
+
+missing = [col for col in required_cols if col not in df.columns]
+
+if missing:
+    raise ValueError(f"Missing columns: {missing}")
+
+df_prioritize = pd.read_csv('20260401_GENERATED_Test1_v5 copy.csv')
+
+priority_names = []
+deprioritized_names = []
+
+# Group by Name
+grouped = df_prioritize.groupby(name_col)
+
+for name, group in grouped:
+    # If any row in the group has "Yes" in claimed_col → deprioritize
+    if (group[claimed_col] == "Yes").any():
+        deprioritized_names.append(name)
+    else:
+        priority_names.append(name)
+
+print("Deprioritized:", deprioritized_names)
+print("Priority:", priority_names)
+
+# Filter dataframes
+df_skipped = df_prioritize[df_prioritize[name_col].isin(deprioritized_names)]
+df_kept = df_prioritize[df_prioritize[name_col].isin(priority_names)]
+
+#Export 
+df_skipped.to_csv('20260401_GENERATED_NonPriority1_v1.csv', index=False)
+df_kept.to_csv('20260401_GENERATED_Priority1_v1.csv', index=False)
+print("\nData exported to '20260401_GENERATED_NonPriority1_v1.csv' and\n'20260401_GENERATED_Priority1_v1.csv'")
+
+
+#PRIORITY File will be used in my ML project
