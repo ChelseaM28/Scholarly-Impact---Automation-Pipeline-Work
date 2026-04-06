@@ -8,16 +8,19 @@ This script will combine all features from various function scripts and feed the
 # Date: 2026-04-06
 # Version: 1.0
 
+##################SETUP##########################
+import sys
+sys.path.append("workspaces/Scholarly-Impact---Automation-Pipeline-Work/Parent")
 
 ##################FEEDER FUNCTION##########################
 #@Brief: This function incorporates all features from Functions folder files into 
 #        a format the ML model can use.
 
 def feature_extraction(data):
-    from .scraped_features import research_area_similarity, institution_similarity, coauthorship_similarity
-    from .disambiguation_feature import name_similarity, disambiguate_names
+    from features.scraped_features import research_area_similarity, institution_similarity, coauthorship_similarity
+    from features.disambiguation_feature import name_similarity, disambiguate_names
     features = []
-    for i in range(len(data)):
+    '''for i in range(len(data)):
         #The ML model needs a list of features for each name pair, so I will append the name similarity 
         # and disambiguation results (+any other fuuture features) for each pair to the features list.
         features.append([name_similarity(data)[i], 
@@ -25,7 +28,7 @@ def feature_extraction(data):
                          research_area_similarity(data)[i], 
                          institution_similarity(data)[i], 
                          coauthorship_similarity(data)[i]])
-    print(f"Extracted features are as follows: 'Name Similarity, Disambiguation, Research Area, Institution, Co-authorship':\n {features}\n")
+    print(f"Extracted features are as follows: 'Name Similarity, Disambiguation, Research Area, Institution, Co-authorship':\n {features}\n")'''
     return features
 
 
