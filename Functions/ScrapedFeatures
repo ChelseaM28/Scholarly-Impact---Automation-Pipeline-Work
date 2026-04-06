@@ -1,0 +1,32 @@
+"""
+Name Disambiguation Features.
+As per the automation plan, this script will complete steps 3-4 of the ML 
+pipeline. 
+"""
+
+# Author: Chelsea Momoh
+# Date: 2026-04-06
+# Version: 1.0
+
+
+##################RESEARCH AREA/PUBLICATION TITLE SIMILARITY FEATURE##########################
+#@Brief: This function checks for MEANING similarity between field of research/subject area keywords.
+#        It will check the UCPMS field against the SCOPUS field, and return a numical score 
+#        based on the accuracy of shared keywords.
+#        It will also check for similarity across UCPMS publication titles and SCOPUS publication titles.
+
+
+
+##################INSTITUTION FEATURE##########################
+#@Brief: This function checks for similarity between the institutions listed in UCPMS and SCOPUS.
+#        It will match ROR IDs when available. 
+#        It should not be weighed as heavily as the name features, since institutions can change 
+#        over time, but it is still a strong signal when it is present and matches.
+
+
+
+##################CO-AUTHORSHIP FEATURE##########################
+#@Brief: This function checks for shared co-authors between the SCOPUS profiles and the UCPMS profiles
+#        OR between the SCOPUS co-authors and the author's Curriculum Vitae (CV).
+#        It should be weighed more heavily than the institution feature, but it is still not as strong 
+#        as name features.

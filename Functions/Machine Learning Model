@@ -1,0 +1,49 @@
+"""
+Machine Learning Model
+Feeder/ML
+This script will combine all features from various function scripts and feed them into the ML pipeline. 
+"""
+
+# Author: Chelsea Momoh
+# Date: 2026-04-06
+# Version: 1.0
+
+
+##################FEEDER FUNCTION##########################
+#@Brief: This function incorporates all features from Functions folder files into 
+#        a format the ML model can use.
+
+#Rough draft:
+'''def feature_extraction(data):
+    features = []
+    for i in range(len(data)):
+        #The ML model needs a list of features for each name pair, so I will append the name similarity 
+        # and disambiguation results (+any other fuuture features) for each pair to the features list.
+        features.append([name_similarity(data)[i], disambiguate_names(data)[i]]) 
+    print(f"Extracted features are as follows: 'Initial Glance, Name Similarity':\n {features}\n")
+    return features'''
+
+
+##################MACHINE LEARNING MODEL##########################
+#@Brief: This function implements the ML model using the features extracted in this file. 
+#        I will start with a simple logistic regression model and then explore more complex models 
+
+#Rough draft:
+'''
+#In terminal: pip install scikit-learn
+
+from sklearn.linear_model import LogisticRegression
+
+#TRAINING the data on 80% of My Set
+X_train = [x for x in feature_extraction(80_percent_data)] 
+y_train = [known decision values converted into 0,1,or 2 for no match, match, or inconclusive] 
+
+#Letting the model PREDICT on the remaining 20% of My Set
+X_test = [x for x in feature_extraction(20_percent_data_test)]  
+#y_test values are not given to the model but = [known decision values converted into 0,1,or 2] 
+
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+print(f"The machine learning model predicts: {model.predict(X_test)}")
+'''
