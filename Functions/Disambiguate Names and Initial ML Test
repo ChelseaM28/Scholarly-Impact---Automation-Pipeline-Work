@@ -1,3 +1,14 @@
+"""
+Name Disambiguation Features.
+As per the automation plan, this script will complete steps 3-4 of the ML 
+pipeline. 
+"""
+
+# Author: Chelsea Momoh
+# Date: 2026-04-06
+# Version: 1.0
+
+
 data = [
     ("A. Ennamaria B", "AMENTA, Ennamaria B"),
     ("AMES, James B", "Ames, James"),
@@ -74,8 +85,9 @@ def name_similarity(data):
 
 def disambiguate_names(data):
     special_characters = {"í": "i", "é": "e", "á": "a", "ó": "o", "ú": "u"}
-    notable_catches = {}
-    matches = []
+    notable_catches = {} #I might decide to use this for logging notable catches (inconclusive cases) that the model can learn from.
+    matches = [] #This contains the results of the disambiguation (1 for match, 0 for no match, 2 for inconclusive)
+    
     #Replacing all the special characters for normalization
     for n1, n2 in data:
         for special, replace in special_characters.items():
@@ -113,8 +125,6 @@ def disambiguate_names(data):
             matches.append(2)
             notable_catches[(n1, n2)] = "inconclusive"
 
-    
-    #print(f"Notable catches: {notable_catches}\n")
     return matches
 
 
@@ -135,17 +145,15 @@ def feature_extraction(data):
 
 
 ##################MACHINE LEARNING UPDATE##########################
-
+#@Brief: This is the ML implementation using this file's features. 
 #In terminal: pip install scikit-learn
 
 from sklearn.linear_model import LogisticRegression
 
-
-
 X_train = [x for x in feature_extraction(data)]  #Using the output of the feature extraction function as features
 y_train = [0, 1, 2, 1, 0] 
 X_test = [x for x in feature_extraction(data_test)]  #Using the output of the feature extraction function as features
-#y_test = [0, 0, 2, 1, 0]  #labels (1 for match, 0 for no match)
+#y_test = [0, 0, 2, 1, 0] 
 
 model = LogisticRegression()
 model.fit(X_train, y_train)
