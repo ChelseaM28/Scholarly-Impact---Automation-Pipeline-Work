@@ -8,12 +8,21 @@ pipeline.
 # Date: 2026-04-06
 # Version: 1.0
 
-print("This is here. luh")
+
 ##################RESEARCH AREA/PUBLICATION TITLE SIMILARITY FEATURE##########################
 #@Brief: This function checks for MEANING similarity between field of research/subject area keywords.
 #        It will check the UCPMS field against the SCOPUS field, and return a numical score 
 #        based on the accuracy of shared keywords.
 #        It will also check for similarity across UCPMS publication titles and SCOPUS publication titles.
+
+#example/draft code for research area similarity feature:
+def research_area_similarity(ucmps_keyword, scopus_keyword):
+    from sentence_transformers import SentenceTransformer, util
+
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    similarity = util.cos_sim(model.encode(ucmps_keyword, convert_to_tensor=True), model.encode(scopus_keyword, convert_to_tensor=True))
+    print(similarity.item())
+
 
 
 
@@ -23,10 +32,14 @@ print("This is here. luh")
 #        It should not be weighed as heavily as the name features, since institutions can change 
 #        over time, but it is still a strong signal when it is present and matches.
 
-
+def institution_similarity(ucmps_institution, scopus_institution):
+    return
 
 ##################CO-AUTHORSHIP FEATURE##########################
 #@Brief: This function checks for shared co-authors between the SCOPUS profiles and the UCPMS profiles
 #        OR between the SCOPUS co-authors and the author's Curriculum Vitae (CV).
 #        It should be weighed more heavily than the institution feature, but it is still not as strong 
 #        as name features.
+
+def coauthorship_similarity(ucmps_coauthors, scopus_coauthors, cv_coauthors):
+    return

@@ -25,7 +25,7 @@ data_test = [
     ("GARCIA, Ramon F", "Garcia, R. J.") 
 ]
 
-##################NAME UNSCRAMBLING FEATURE##########################
+##################NAME UNSCRAMBLING DETECTION##########################
 #@Brief: Checking the order of commas to determine the order of the name. 
 #        UCMPS and SCOPUS formatting frequently differs in this way.
 #        e.g: AMENTA, Ennamaria B = Ennamaria B Amenta, while
@@ -37,7 +37,7 @@ def normalize_format(name):
         tokens = tokens[1:] + [tokens[0]]
     return tokens
 
-##################INITIALS/NAME SIMILARITY FEATURE##########################
+##################INITIALS DETECTION##########################
 #@brief: This function catches scenarios where one name is a single initial and 
 #        the other is a full name. It will return "inconclusive" if both are 
 #        initials (since we can't determine if they match or not).
@@ -58,7 +58,7 @@ def compare_token(t1, t2):
     return "reject"
 
 
-##################NAME SIMILARITY FEATURE UPDATE##########################
+##################NAME SIMILARITY FEATURE##########################
 #@brief: Adding a feature based on basic text similarity from difflib library.
 #        "The ratio is computed as 2.0 × M / T, where M is the total number of 
 #        matching characters across all identified subsequences, and T is the 
@@ -77,7 +77,7 @@ def name_similarity(data):
     return similarities
 
 
-##################MAIN NAME DISAMBIGUATION FUNCTION##########################
+##################NAME DISAMBIGUATION##########################
 #@Brief: This function will incorporate the name unscrambling and initals detection features.
 #        It removes special characters that may confuse the model.
 #        It simulates my initial "glance" test for name matching. It will return a list 
@@ -129,8 +129,8 @@ def disambiguate_names(data):
 
 
 
-
-##################FEEDER FUNCTION UPDATE##########################
+#Remove this prior draft once import errors are resolved:
+'''##################FEEDER FUNCTION UPDATE##########################
 #@Brief: This function incorporates all features in this file into a format the ML model can use.
 
 def feature_extraction(data):
@@ -140,10 +140,10 @@ def feature_extraction(data):
         # and disambiguation results (+any other fuuture features) for each pair to the features list.
         features.append([name_similarity(data)[i], disambiguate_names(data)[i]]) 
     print(f"Extracted features are as follows: 'Initial Glance, Name Similarity':\n {features}\n")
-    return features
+    return features'''
 
-
-##################MACHINE LEARNING UPDATE##########################
+#Remove this prior draft once import errors are resolved:
+'''##################MACHINE LEARNING UPDATE##########################
 #@Brief: This is the ML implementation using this file's features. 
 #In terminal: pip install scikit-learn
 
@@ -162,4 +162,4 @@ model = LogisticRegression()
 model.fit(X_train, y_train)
 
 print(f"The machine learning model predicts: {model.predict(X_test)}")
-#print("bingo")
+#print("bingo")'''

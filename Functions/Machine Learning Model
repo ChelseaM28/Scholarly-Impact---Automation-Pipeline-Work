@@ -8,20 +8,25 @@ This script will combine all features from various function scripts and feed the
 # Date: 2026-04-06
 # Version: 1.0
 
-print("This is here luh.")
+
 ##################FEEDER FUNCTION##########################
 #@Brief: This function incorporates all features from Functions folder files into 
 #        a format the ML model can use.
 
-#Rough draft:
-'''def feature_extraction(data):
+def feature_extraction(data):
+    from ScrapedFeatures import research_area_similarity, institution_similarity, coauthorship_similarity
+    from DisambiguateNamesAndInitialMLTest import name_similarity, disambiguate_names
     features = []
     for i in range(len(data)):
         #The ML model needs a list of features for each name pair, so I will append the name similarity 
         # and disambiguation results (+any other fuuture features) for each pair to the features list.
-        features.append([name_similarity(data)[i], disambiguate_names(data)[i]]) 
-    print(f"Extracted features are as follows: 'Initial Glance, Name Similarity':\n {features}\n")
-    return features'''
+        features.append([name_similarity(data)[i], 
+                         disambiguate_names(data)[i], 
+                         research_area_similarity(data)[i], 
+                         institution_similarity(data)[i], 
+                         coauthorship_similarity(data)[i]])
+    print(f"Extracted features are as follows: 'Name Similarity, Disambiguation, Research Area, Institution, Co-authorship':\n {features}\n")
+    return features
 
 
 ##################MACHINE LEARNING MODEL##########################
