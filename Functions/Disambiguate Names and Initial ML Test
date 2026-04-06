@@ -14,12 +14,26 @@ data_test = [
     ("GARCIA, Ramon F", "Garcia, R. J.") 
 ]
 
-#Checking the order of commas to determine the order of the name
+##################NAME UNSCRAMBLING FEATURE##########################
+#@Brief: Checking the order of commas to determine the order of the name. 
+#        UCMPS and SCOPUS formatting frequently differs in this way.
+#        e.g: AMENTA, Ennamaria B = Ennamaria B Amenta, while
+#             A. Ennamaria B = A. Ennamaria B. 
+
 def normalize_format(name):
     tokens = name.replace(",", " ").split()
     if len(tokens) >= 2 and len(tokens[0]) == 1:
         tokens = tokens[1:] + [tokens[0]]
     return tokens
+
+##################INITIALS/NAME SIMILARITY FEATURE##########################
+#@brief: This function catches scenarios where one name is a single initial and 
+#        the other is a full name. It will return "inconclusive" if both are 
+#        initials (since we can't determine if they match or not).
+#        It should ultimately be weighed more strongly than the name similarity 
+#        feature; if the only information we have is an initial, we can 
+#        only check for consistency between the initial and the full name, which 
+#        is a stronger signal than basic text similarity.
 
 def compare_token(t1, t2):
     #If either token is a single initial, we can only check initial consistency
@@ -27,10 +41,36 @@ def compare_token(t1, t2):
         if t1[0] != t2[0]:
             return "reject"
         return "inconclusive"
-    #Both are full names — require exact match
+    #Both are full names => require exact match
     if t1 == t2:
         return "accept"
     return "reject"
+
+
+##################NAME SIMILARITY FEATURE UPDATE##########################
+#@brief: Adding a feature based on basic text similarity from difflib library.
+#        "The ratio is computed as 2.0 × M / T, where M is the total number of 
+#        matching characters across all identified subsequences, and T is the 
+#        total number of characters in both strings combined."
+
+from difflib import SequenceMatcher
+def name_similarity(data):
+    similarities = []
+    for n1, n2 in data:
+        print(f"Calculating similarity for '{n1}' and '{n2}'...")   
+        n1_list = [token.lower() for token in normalize_format(n1)]
+        n2_list = [token.lower() for token in normalize_format(n2)]
+        similarity = SequenceMatcher(None, n1_list, n2_list).ratio()
+        print(f"Similarity between '{n1}' and '{n2}': {similarity}")
+        similarities.append(similarity)
+    return similarities
+
+
+##################MAIN NAME DISAMBIGUATION FUNCTION##########################
+#@Brief: This function will incorporate the name unscrambling and initals detection features.
+#        It removes special characters that may confuse the model.
+#        It simulates my initial "glance" test for name matching. It will return a list 
+#        of matches (1 for match, 0 for no match, 2 for inconclusive) and a log of notable catches.
 
 def disambiguate_names(data):
     special_characters = {"í": "i", "é": "e", "á": "a", "ó": "o", "ú": "u"}
@@ -55,9 +95,11 @@ def disambiguate_names(data):
                 print(f"{n1} and {n2} do not match due to different middle initials.\n")
                 matches.append(0)
                 continue
-
+        
+       
         last_result = compare_token(n1_split[0], n2_split[0])
         first_result = compare_token(n1_split[1], n2_split[1])
+
 
         if last_result == "reject" or first_result == "reject":
             print(f"{n1} and {n2} do not match.\n")
@@ -71,51 +113,42 @@ def disambiguate_names(data):
             matches.append(2)
             notable_catches[(n1, n2)] = "inconclusive"
 
-    #print(f"matches: {matches}\n")
+    
     #print(f"Notable catches: {notable_catches}\n")
     return matches
 
-''' #I no longer need this function now that I'm moving on to the ML portion
-def all_correct(matches):
-    match_log = {}
-    for i, m in enumerate(matches):
-        match_log[i+1] = m
-    if all(m == "1" for m in matches):
-        print("All names match correctly.")
-    else:
-        print("At least one name is incorrect.")
-    print(f"Match Log: {match_log}\n")'''
 
 
 #all_correct(disambiguate_names(data))
 
-##################NAME LENGTH FEATURE UPDATE##########################
+##################FEEDER FUNCTION UPDATE##########################
+#@Brief: This function incorporates all features in this file into a format the ML model can use.
 
-#@brief: Adding a feature based on the length of the names to improve disambiguation accuracy.
+def feature_extraction(data):
+    features = []
+    for i in range(len(data)):
+        #The ML model needs a list of features for each name pair, so I will append the name similarity 
+        # and disambiguation results (+any other fuuture features) for each pair to the features list.
+        features.append([name_similarity(data)[i], disambiguate_names(data)[i]]) 
+    print(f"Extracted features are as follows: 'Initial Glance, Name Similarity':\n {features}\n")
+    return features
 
-def name_length_feature(n1, n2):
-    #Compare the lengths without spaces. 
-    return
-    
 
-##################ML UPDATE##########################
+##################MACHINE LEARNING UPDATE##########################
 
 #In terminal: pip install scikit-learn
-'''def to_int(matches): #A really unnecessary brain glitch I had where I had strings in the matches string
-    return [[int(m)] for m in matches]
-
-
-
-X = to_int(disambiguate_names(data_test))  #feature matrix (e.g., name similarity scores)'''
 
 from sklearn.linear_model import LogisticRegression
-X_train = [[x] for x in disambiguate_names(data)]  #Using the output of the disambiguation function as features
+
+
+
+X_train = [x for x in feature_extraction(data)]  #Using the output of the feature extraction function as features
 y_train = [0, 1, 2, 1, 0] 
-X_test = [[x] for x in disambiguate_names(data_test)]  #Using the output of the disambiguation function as features
+X_test = [x for x in feature_extraction(data_test)]  #Using the output of the feature extraction function as features
 #y_test = [0, 0, 2, 1, 0]  #labels (1 for match, 0 for no match)
 
 model = LogisticRegression()
 model.fit(X_train, y_train)
 
 print(f"The machine learning model predicts: {model.predict(X_test)}")
-print("bingo")
+#print("bingo")
