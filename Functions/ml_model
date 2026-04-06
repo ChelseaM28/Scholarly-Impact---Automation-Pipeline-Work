@@ -14,8 +14,8 @@ This script will combine all features from various function scripts and feed the
 #        a format the ML model can use.
 
 def feature_extraction(data):
-    from ScrapedFeatures import research_area_similarity, institution_similarity, coauthorship_similarity
-    from DisambiguateNamesAndInitialMLTest import name_similarity, disambiguate_names
+    from .scraped_features import research_area_similarity, institution_similarity, coauthorship_similarity
+    from .disambiguation_feature import name_similarity, disambiguate_names
     features = []
     for i in range(len(data)):
         #The ML model needs a list of features for each name pair, so I will append the name similarity 
