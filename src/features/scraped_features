@@ -20,7 +20,7 @@ data_fields = [
     ("Math", "Statistics"),
     ("Medical sciences", "pediatrics"),
     ("Nutrition", "Medicine"),
-    ("Art History", "history")
+    ("Biology", "Plant Sciences")
 ]
 
 
@@ -131,7 +131,7 @@ def research_area_similarity(data):
     
     #return similarity_scores
 #NEED TO USE NUMPY FOR CLEANER CODE LATER
-research_area_similarity(data_fields)
+#research_area_similarity(data_fields)
 #last thing to determine the best scoring option woudl 
 # be to normalize the scores and compare htem against each other. But JCN has been strangely inneffective So I will get rid of it.
 
@@ -147,8 +147,28 @@ research_area_similarity(data_fields)
     field_similarities.append(similarity.item())
     print(similarity.item())
     return(field_similarities)'''
-#Option 3: TD-IDF Vectorizer + Cosine Similarity
-'''from sklearn.feature_extraction.text import TfidfVectorizer
+
+
+
+
+#Option 2: RapidFuzz Library for Fuzzy String Matching
+#Seems somewhat effective. Can be used in combination with nltk
+from rapidfuzz import fuzz, process
+print("\n\n\n\n\n=================FUZZY RATIOS==================")
+print(fuzz.ratio("Computer Science", "Computer Science"))
+print(fuzz.ratio("Physics", "Physical Sciences"))  
+print(fuzz.ratio("Chemistry", "Chemical Sciences"))
+print(fuzz.ratio("Math", "Statistics"))   
+print(fuzz.ratio("Biology", "Plant Sciences")) 
+print(fuzz.ratio("Biology", "Biological")) 
+print(fuzz.ratio("Viticulture", "Enology")) 
+
+
+##################FIELD FEATURE GRAVEYARD##########################
+#-----Highly Ineffective ------ Option 3: TD-IDF Vectorizer + Cosine Similarity
+'''#Not to be used -- e.g.: statistics and math and biology and biological 
+                            are deemed irrelevant using this method
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
@@ -180,14 +200,7 @@ similarities = cosine_similarity(query_vector, tfidf_matrix).flatten()
 
 # Display results
 for i, score in enumerate(similarities):
-    print(f"Document {i}: {score:.4f} - {documents[i]}")   '''
-#Option 2: RapidFuzz Library for Fuzzy String Matching
-'''from rapidfuzz import fuzz, process
-print(fuzz.ratio("Computer Science", "Computer Science"))
-print(fuzz.ratio("Biology", "Biological Sciences"))
-print(fuzz.ratio("Physics", "Physical Sciences"))  
-print(fuzz.ratio("Chemistry", "Chemical Sciences"))
-print(fuzz.ratio("Mathematics", "Mathematical Sciences"))   
+    print(f"Document {i}: {score:.4f} - {documents[i]}")   
 '''
 
 
