@@ -19,7 +19,8 @@ data_fields = [
     ("Viticulture", "Enology"),
     ("Math", "Statistics"),
     ("Medical sciences", "pediatrics"),
-    
+    ("Nutrition", "Medicine"),
+    ("Art History", "history")
 ]
 
 
@@ -40,7 +41,6 @@ def research_area_similarity(data):
     wun_similarity_scores = []
     resnik_similarity_scores = []
     lin_similarity_scores = []
-    jcn_similarity_scores = []
     for ucmps_field, scopus_field in data:
         ucmps_field = ucmps_field.split()[0:2]
         scopus_field = scopus_field.split()[0:2]
@@ -63,86 +63,78 @@ def research_area_similarity(data):
             # cases where one of the synsets is missing (e.g. if the field is not recognized as a valid word in WordNet), 
             # whereas the method on the synset object will throw an error in that case.
             lin_first_to_first = wn.lin_similarity(ucmps_synsets_first[0], scopus_synsets_first[0], ic=brown_ic)
-            jcn_first_to_first = wn.jcn_similarity(ucmps_synsets_first[0], scopus_synsets_first[0], ic=brown_ic)
+            
         except:
             
             similarity_first_to_first = "error"
             resnik_first_to_first = "error"
             lin_first_to_first = "error"
-            jcn_first_to_first = "error"
+            
         try:
             if scopus_synsets_second[0].name() != 'Science' and scopus_synsets_second[0].name()  != 'Sciences':
                 similarity_first_to_second = ucmps_synsets_first[0].wup_similarity(scopus_synsets_second[0])
                 resnik_first_to_second = wn.res_similarity(ucmps_synsets_first[0], scopus_synsets_second[0], ic=brown_ic)
                 lin_first_to_second = wn.lin_similarity(ucmps_synsets_first[0], scopus_synsets_second[0], ic=brown_ic)
-                jcn_first_to_second = wn.jcn_similarity(ucmps_synsets_first[0], scopus_synsets_second[0], ic=brown_ic)
-           
+               
             else:
                 similarity_first_to_second = -1
                 resnik_first_to_second = -1
                 lin_first_to_second = -1
-                jcn_first_to_second = -1
 
                 print(f"Skipped similarity calculation for '{scopus_field}' because it is too general of a term to provide a strong signal of similarity.")
         except:
             similarity_first_to_second = "error"
             resnik_first_to_second = "error"
             lin_first_to_second = "error"
-            jcn_first_to_second = "error"
         try:
             if ucmps_synsets_second[0].name() != 'Science' and ucmps_synsets_second[0].name() != 'Sciences':
                 similarity_second_to_first = ucmps_synsets_second[0].wup_similarity(scopus_synsets_first[0])  
                 resnik_second_to_first = wn.res_similarity(ucmps_synsets_second[0], scopus_synsets_first[0], ic=brown_ic)
                 lin_second_to_first = wn.lin_similarity(ucmps_synsets_second[0], scopus_synsets_first[0], ic=brown_ic)
-                jcn_second_to_first = wn.jcn_similarity(ucmps_synsets_second[0], scopus_synsets_first[0], ic=brown_ic)
             else:
                 similarity_second_to_first = -1
                 resnik_second_to_first = -1
                 lin_second_to_first = -1
-                jcn_second_to_first = -1
                 print(f"Skipped similarity calculation for '{ucmps_field}' because it is too general of a term to provide a strong signal of similarity.")
         except:
             similarity_second_to_first = "error"
             resnik_second_to_first = "error"
             lin_second_to_first = "error"
-            jcn_second_to_first = "error"
         try:
             if ucmps_synsets_second[0].name() != 'Science' and ucmps_synsets_second[0].name() != 'Sciences' and scopus_synsets_second[0].name() != 'Science' and scopus_synsets_second[0].name() != 'Sciences':
                 similarity_second_to_second = ucmps_synsets_second[0].wup_similarity(scopus_synsets_second[0])
                 resnik_second_to_second = wn.res_similarity(ucmps_synsets_second[0], scopus_synsets_second[0], ic=brown_ic)
                 lin_second_to_second = wn.lin_similarity(ucmps_synsets_second[0], scopus_synsets_second[0], ic=brown_ic)
-                jcn_second_to_second = wn.jcn_similarity(ucmps_synsets_second[0], scopus_synsets_second[0], ic=brown_ic)
             else:
                 similarity_second_to_second = -1
                 resnik_second_to_second = -1     
                 lin_second_to_second = -1
-                jcn_second_to_second = -1
+               
                 print(f"Skipped similarity calculation for '{ucmps_field}' and '{scopus_field}' because one or both fields are too general of a term to provide a strong signal of similarity.")
         except:
             similarity_second_to_second = "error"
             resnik_second_to_second = "error"
             lin_second_to_second = "error"
-            jcn_second_to_second = "error"
+            
         
         wun_similarity_scores.append([similarity_first_to_first, similarity_first_to_second, similarity_second_to_first, similarity_second_to_second])
         resnik_similarity_scores.append([resnik_first_to_first,resnik_first_to_second,resnik_second_to_first,resnik_second_to_second])
         lin_similarity_scores.append([lin_first_to_first,lin_first_to_second,lin_second_to_first,lin_second_to_second])
-        jcn_similarity_scores.append([jcn_first_to_first,jcn_first_to_second,jcn_second_to_first,jcn_second_to_second])
         #need to somehow remove the "science" term because it is so common across all fields that it is not a strong signal of similarity.
         # I will need to add a check to skip the similarity calculation for any field that is just "science" or "sciences", since that is too general of a term to provide a strong signal of similarity. I can add this check before each similarity calculation and set the similarity scores to 0 if either field is "science" or "sciences".
        
         print(f"Similarity scores for '{ucmps_field}' and '{scopus_field}': {wun_similarity_scores[-1]} ")
         print(f"Resnik similarity scores for '{ucmps_field}' and '{scopus_field}': {resnik_similarity_scores[-1]} ")
         print(f"Lin similarity scores for '{ucmps_field}' and '{scopus_field}': {lin_similarity_scores[-1]} ")
-        print(f"JCN similarity scores for '{ucmps_field}' and '{scopus_field}': {jcn_similarity_scores[-1]}\n\n\n\n ")
-        
+      
     
     
     #return similarity_scores
 #NEED TO USE NUMPY FOR CLEANER CODE LATER
 research_area_similarity(data_fields)
 #last thing to determine the best scoring option woudl 
-# be to normalize the scores and compare htem against each other
+# be to normalize the scores and compare htem against each other. But JCN has been strangely inneffective So I will get rid of it.
+
 
 #Option 1: Field Transformer
 '''def research_area_similarity(ucmps_field, scopus_field):
