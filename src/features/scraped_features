@@ -15,14 +15,188 @@ pipeline.
 #        based on the accuracy of shared keywords.
 #        It will also check for similarity across UCPMS publication titles and SCOPUS publication titles.
 
+data_fields = [
+    ("Viticulture", "Enology"),
+    ("Math", "Statistics"),
+    ("Medical sciences", "pediatrics"),
+    
+]
+
+
 #example/draft code for research area similarity feature:
-def research_area_similarity(ucmps_keyword, scopus_keyword):
+#Option 4: wup_similarity from NLTK WordNet
+
+from nltk.corpus import wordnet as wn
+import nltk
+nltk.download('wordnet')
+nltk.download('wordnet_ic')
+from nltk.corpus import wordnet_ic
+nltk.data.find('corpora/wordnet_ic') 
+brown_ic = wordnet_ic.ic('ic-brown.dat')
+
+#to clean up this function, i need to
+def research_area_similarity(data):
+    #PLAN TO REPLACE ALL FOR LOOPS WITH NUMPY FUNCTIONS
+    wun_similarity_scores = []
+    resnik_similarity_scores = []
+    lin_similarity_scores = []
+    jcn_similarity_scores = []
+    for ucmps_field, scopus_field in data:
+        ucmps_field = ucmps_field.split()[0:2]
+        scopus_field = scopus_field.split()[0:2]
+        
+        ucmps_synsets_first = wn.synsets(ucmps_field[0])
+        scopus_synsets_first = wn.synsets(scopus_field[0])
+    
+        ucmps_synsets_second = wn.synsets(ucmps_field[1]) if len(ucmps_field) > 1 else []
+        scopus_synsets_second = wn.synsets(scopus_field[1]) if len(scopus_field) > 1 else []
+
+        
+
+        #I need to match either the first or second token in the field to get a strong 
+        # signal of similarity, since some fields are listed as "biology" while 
+        # others are just "wildlife biology".
+        try:
+            similarity_first_to_first = ucmps_synsets_first[0].wup_similarity(scopus_synsets_first[0])
+            resnik_first_to_first = wn.res_similarity(ucmps_synsets_first[0], scopus_synsets_first[0], ic=brown_ic)
+            #ucmpssynsets.wup versus wn.wup_similarity - I think I need to use wn.wup_similarity because it can handle 
+            # cases where one of the synsets is missing (e.g. if the field is not recognized as a valid word in WordNet), 
+            # whereas the method on the synset object will throw an error in that case.
+            lin_first_to_first = wn.lin_similarity(ucmps_synsets_first[0], scopus_synsets_first[0], ic=brown_ic)
+            jcn_first_to_first = wn.jcn_similarity(ucmps_synsets_first[0], scopus_synsets_first[0], ic=brown_ic)
+        except:
+            
+            similarity_first_to_first = "error"
+            resnik_first_to_first = "error"
+            lin_first_to_first = "error"
+            jcn_first_to_first = "error"
+        try:
+            if scopus_synsets_second[0].name() != 'Science' and scopus_synsets_second[0].name()  != 'Sciences':
+                similarity_first_to_second = ucmps_synsets_first[0].wup_similarity(scopus_synsets_second[0])
+                resnik_first_to_second = wn.res_similarity(ucmps_synsets_first[0], scopus_synsets_second[0], ic=brown_ic)
+                lin_first_to_second = wn.lin_similarity(ucmps_synsets_first[0], scopus_synsets_second[0], ic=brown_ic)
+                jcn_first_to_second = wn.jcn_similarity(ucmps_synsets_first[0], scopus_synsets_second[0], ic=brown_ic)
+           
+            else:
+                similarity_first_to_second = -1
+                resnik_first_to_second = -1
+                lin_first_to_second = -1
+                jcn_first_to_second = -1
+
+                print(f"Skipped similarity calculation for '{scopus_field}' because it is too general of a term to provide a strong signal of similarity.")
+        except:
+            similarity_first_to_second = "error"
+            resnik_first_to_second = "error"
+            lin_first_to_second = "error"
+            jcn_first_to_second = "error"
+        try:
+            if ucmps_synsets_second[0].name() != 'Science' and ucmps_synsets_second[0].name() != 'Sciences':
+                similarity_second_to_first = ucmps_synsets_second[0].wup_similarity(scopus_synsets_first[0])  
+                resnik_second_to_first = wn.res_similarity(ucmps_synsets_second[0], scopus_synsets_first[0], ic=brown_ic)
+                lin_second_to_first = wn.lin_similarity(ucmps_synsets_second[0], scopus_synsets_first[0], ic=brown_ic)
+                jcn_second_to_first = wn.jcn_similarity(ucmps_synsets_second[0], scopus_synsets_first[0], ic=brown_ic)
+            else:
+                similarity_second_to_first = -1
+                resnik_second_to_first = -1
+                lin_second_to_first = -1
+                jcn_second_to_first = -1
+                print(f"Skipped similarity calculation for '{ucmps_field}' because it is too general of a term to provide a strong signal of similarity.")
+        except:
+            similarity_second_to_first = "error"
+            resnik_second_to_first = "error"
+            lin_second_to_first = "error"
+            jcn_second_to_first = "error"
+        try:
+            if ucmps_synsets_second[0].name() != 'Science' and ucmps_synsets_second[0].name() != 'Sciences' and scopus_synsets_second[0].name() != 'Science' and scopus_synsets_second[0].name() != 'Sciences':
+                similarity_second_to_second = ucmps_synsets_second[0].wup_similarity(scopus_synsets_second[0])
+                resnik_second_to_second = wn.res_similarity(ucmps_synsets_second[0], scopus_synsets_second[0], ic=brown_ic)
+                lin_second_to_second = wn.lin_similarity(ucmps_synsets_second[0], scopus_synsets_second[0], ic=brown_ic)
+                jcn_second_to_second = wn.jcn_similarity(ucmps_synsets_second[0], scopus_synsets_second[0], ic=brown_ic)
+            else:
+                similarity_second_to_second = -1
+                resnik_second_to_second = -1     
+                lin_second_to_second = -1
+                jcn_second_to_second = -1
+                print(f"Skipped similarity calculation for '{ucmps_field}' and '{scopus_field}' because one or both fields are too general of a term to provide a strong signal of similarity.")
+        except:
+            similarity_second_to_second = "error"
+            resnik_second_to_second = "error"
+            lin_second_to_second = "error"
+            jcn_second_to_second = "error"
+        
+        wun_similarity_scores.append([similarity_first_to_first, similarity_first_to_second, similarity_second_to_first, similarity_second_to_second])
+        resnik_similarity_scores.append([resnik_first_to_first,resnik_first_to_second,resnik_second_to_first,resnik_second_to_second])
+        lin_similarity_scores.append([lin_first_to_first,lin_first_to_second,lin_second_to_first,lin_second_to_second])
+        jcn_similarity_scores.append([jcn_first_to_first,jcn_first_to_second,jcn_second_to_first,jcn_second_to_second])
+        #need to somehow remove the "science" term because it is so common across all fields that it is not a strong signal of similarity.
+        # I will need to add a check to skip the similarity calculation for any field that is just "science" or "sciences", since that is too general of a term to provide a strong signal of similarity. I can add this check before each similarity calculation and set the similarity scores to 0 if either field is "science" or "sciences".
+       
+        print(f"Similarity scores for '{ucmps_field}' and '{scopus_field}': {wun_similarity_scores[-1]} ")
+        print(f"Resnik similarity scores for '{ucmps_field}' and '{scopus_field}': {resnik_similarity_scores[-1]} ")
+        print(f"Lin similarity scores for '{ucmps_field}' and '{scopus_field}': {lin_similarity_scores[-1]} ")
+        print(f"JCN similarity scores for '{ucmps_field}' and '{scopus_field}': {jcn_similarity_scores[-1]}\n\n\n\n ")
+        
+    
+    
+    #return similarity_scores
+#NEED TO USE NUMPY FOR CLEANER CODE LATER
+research_area_similarity(data_fields)
+#last thing to determine the best scoring option woudl 
+# be to normalize the scores and compare htem against each other
+
+#Option 1: Field Transformer
+'''def research_area_similarity(ucmps_field, scopus_field):
+    field_similarities = []
     from sentence_transformers import SentenceTransformer, util
 
     model = SentenceTransformer('all-MiniLM-L6-v2')
-    similarity = util.cos_sim(model.encode(ucmps_keyword, convert_to_tensor=True), model.encode(scopus_keyword, convert_to_tensor=True))
+    #getting an error about unauthenticated 
+    similarity = util.cos_sim(model.encode(ucmps_field, convert_to_tensor=True), model.encode(scopus_field, convert_to_tensor=True))
+    field_similarities.append(similarity.item())
     print(similarity.item())
+    return(field_similarities)'''
+#Option 3: TD-IDF Vectorizer + Cosine Similarity
+'''from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
+# Define your corpus and the single query string
+documents = [
+    "Computer Science",
+    "Biological Sciences",
+    "Physical Sciences",
+    "Chemical Sciences",
+    "Mathematical Sciences", 
+    "Biology",
+    "Physics",
+    "Chemistry",
+    "Mathematics"
+]
+query_string = "Biology"
+
+# Initialize the vectorizer (default uses unigrams, smooth_idf=True, sublinear_tf=False)
+vectorizer = TfidfVectorizer()
+
+# Fit and transform the corpus
+tfidf_matrix = vectorizer.fit_transform(documents)
+
+# Transform the single query string
+query_vector = vectorizer.transform([query_string])
+
+# Calculate cosine similarity between the query and all documents
+similarities = cosine_similarity(query_vector, tfidf_matrix).flatten()
+
+# Display results
+for i, score in enumerate(similarities):
+    print(f"Document {i}: {score:.4f} - {documents[i]}")   '''
+#Option 2: RapidFuzz Library for Fuzzy String Matching
+'''from rapidfuzz import fuzz, process
+print(fuzz.ratio("Computer Science", "Computer Science"))
+print(fuzz.ratio("Biology", "Biological Sciences"))
+print(fuzz.ratio("Physics", "Physical Sciences"))  
+print(fuzz.ratio("Chemistry", "Chemical Sciences"))
+print(fuzz.ratio("Mathematics", "Mathematical Sciences"))   
+'''
 
 
 
@@ -32,8 +206,36 @@ def research_area_similarity(ucmps_keyword, scopus_keyword):
 #        It should not be weighed as heavily as the name features, since institutions can change 
 #        over time, but it is still a strong signal when it is present and matches.
 
-def institution_similarity(ucmps_institution, scopus_institution):
-    return
+
+institution_fields = [
+    ("UC Davis"),
+    ("Washington State University"),
+    ("University of California, Davis"),
+    ("Sacramento State University"),
+    ("UC Davis One Health Institute")
+]
+
+def institution_similarity(data):
+    davis_affiliations = ["University of California, Davis", "UC Davis", "UCD", "UC Davis School of Medicine", 
+                          "School of Veterinary Medicine", "Crocker Nuclear Laboratory", "Bodega Marine Laboratory", 
+                          "UC Davis Genome Center", "UC Davis Health System", "UC Davis Health", "UC Davis Medical Center", 
+                          "UC Davis School of Nursing", "UC Davis School of Pharmacy", "UC Davis School of Veterinary Medicine", 
+                          "UC Davis College of Agricultural and Environmental Sciences", "UC Davis College of Biological Sciences", 
+                          "UC Davis College of Engineering", "UC Davis College of Letters and Science", "UC Davis Graduate School of Management", 
+                          "UC Davis Extension", "UC Davis Institute of Transportation Studies", "UC Davis John Muir Institute of the Environment", 
+                          "UC Davis Tahoe Environmental Research Center", "UC Davis Center for Watershed Sciences", "UC Davis One Health Institute"]
+    affiliated = 0
+    affiliations = []
+    for ucmps_institution in data:
+        if ucmps_institution in davis_affiliations:
+            affiliated = 1
+        else:
+            affiliated = 0
+        affiliations.append(affiliated)
+    print(f"Institution similarity results (1 for affiliated with UC Davis, 0 for not affiliated): {affiliations}")
+    return affiliations
+
+#institution_similarity(institution_fields)
 
 ##################CO-AUTHORSHIP FEATURE##########################
 #@Brief: This function checks for shared co-authors between the SCOPUS profiles and the UCPMS profiles
