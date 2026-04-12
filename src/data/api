@@ -1,0 +1,58 @@
+#TEST RUN USING PRE- GENERATED CODE
+import pybliometrics
+from pybliometrics.scopus import AuthorRetrieval
+#from pybliometrics.scopus import AbstractRetrieval
+import pandas as pd
+
+#I need to get a new API key and add a UC Davis institutional token in order to 
+#Access the view of the json data that I need.
+
+config_path = '/home/codespace/.config/pybliometrics.cfg'
+#pybliometrics.utils.create_config([('fd4a1e920403dcc8566f15b756c77806', '')], force=True)
+
+'''def verify_author(scopus_id):
+    try:
+        clean_id = str(scopus_id).split('.')[0].strip()
+        # 1. Pull the profile
+        au = AuthorRetrieval(clean_id, view='STANDARD', refresh=True)
+        #ab = AbstractRetrieval("10.1016/j.softx.2019.100263")
+        #ab.title
+        
+        # 2. Get key data points
+        data = {
+            "name": f"{au.given_name} {au.surname}",
+            "institution": au.affiliation_current[0].preferred_name if au.affiliation_current else "Unknown",
+            "areas": [area.area for area in au.subject_areas],
+            "coauthors": [f"{c.given_name} {c.surname}" for c in au.get_coauthors()[:10]] # Get top 10
+        }
+        return data
+    except Exception as e:
+        print(e)
+        return "CD" # Page broken or ID invalid
+'''
+
+pybliometrics.scopus.init(config_path=config_path)
+def verify_author(scopus_id):
+    try:
+        clean_id = str(scopus_id).split('.')[0].strip()
+        
+        # Start with 'LIGHT' view. If LIGHT works but STANDARD doesn't,
+        # it's a 100% confirmation that your key lacks 'Enhanced' permissions.
+        au = AuthorRetrieval(clean_id, view='LIGHT', refresh=True)
+        
+        data = {
+            "name": f"{au.given_name} {au.surname}",
+            "institution": au.affiliation_current[0].preferred_name if au.affiliation_current else "Unknown",
+        }
+        return data
+    except Exception as e:
+        # This will print the specific error (401, 404, etc.)
+        print(f"Error logic triggered: {e}") 
+        return "CD"
+
+
+
+profile = verify_author("7004212771")
+
+
+print(profile)
