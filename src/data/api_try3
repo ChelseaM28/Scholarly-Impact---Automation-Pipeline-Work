@@ -1,0 +1,18 @@
+import pybliometrics
+from pathlib import Path
+
+'''#In this block, I initialize my key and run pybliometrics.utils.create_config(mypath)
+pybliometrics.init(keys = ['use the affiliationkey key'])  # read API keys
+pybliometrics.utils.create_config(Path('6616fce337ac41723512c81e335f54bf'))'''
+config_path = '/workspaces/Scholarly-Impact---Automation-Pipeline-Work/6616fce337ac41723512c81e335f54bf'
+#config_name = '6616fce337ac41723512c81e335f54bf'
+pybliometrics.init(config_path = config_path)
+
+
+# Affiliation information
+from pybliometrics.scopus import AffiliationRetrieval
+
+
+af = AffiliationRetrieval('35586253000')
+
+

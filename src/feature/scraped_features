@@ -1,4 +1,5 @@
 """
+filename: scraped_features
 Name Disambiguation Features.
 As per the automation plan, this script will complete steps 3-4 of the ML 
 pipeline. 
@@ -41,6 +42,9 @@ def research_area_similarity(data):
     wun_similarity_scores = []
     resnik_similarity_scores = []
     lin_similarity_scores = []
+    combined_scores = []
+
+    #This for loop will create similarity scores using all three methods
     for ucmps_field, scopus_field in data:
         ucmps_field = ucmps_field.split()[0:2]
         scopus_field = scopus_field.split()[0:2]
@@ -123,10 +127,15 @@ def research_area_similarity(data):
         #need to somehow remove the "science" term because it is so common across all fields that it is not a strong signal of similarity.
         # I will need to add a check to skip the similarity calculation for any field that is just "science" or "sciences", since that is too general of a term to provide a strong signal of similarity. I can add this check before each similarity calculation and set the similarity scores to 0 if either field is "science" or "sciences".
        
+        
         print(f"Similarity scores for '{ucmps_field}' and '{scopus_field}': {wun_similarity_scores[-1]} ")
         print(f"Resnik similarity scores for '{ucmps_field}' and '{scopus_field}': {resnik_similarity_scores[-1]} ")
         print(f"Lin similarity scores for '{ucmps_field}' and '{scopus_field}': {lin_similarity_scores[-1]} ")
-      
+    
+    for i in wun_similarity_scores:
+        #Will need a more sophisticated method later. How do we factor in a '2' value for CD?
+        combined_scores.append(wun_similarity_scores[i] + resnik_similarity_scores[i] + lin_similarity_scores[i])
+    return combined_scores   
     
     
     #return similarity_scores
@@ -163,6 +172,17 @@ print(fuzz.ratio("Biology", "Plant Sciences"))
 print(fuzz.ratio("Biology", "Biological")) 
 print(fuzz.ratio("Viticulture", "Enology")) 
 
+#Research Area Similarity Combination
+#@Brief: This section will normalize/standardize the institution matching from the 
+#research_area_similarity function and the fuzz ratio
+def field_similarity_feature(data):
+    field_similarity = []
+    for ucpms_field, scopus_field in data:
+        fuzz = fuzz.ratio(str(ucpms_field), str(scopus_field))
+    
+    for combined_similarity in research_area_similarity(data):
+        field_similarity.append(fuzz + combined_similarity)
+    return field_similarity
 
 ##################FIELD FEATURE GRAVEYARD##########################
 #-----Highly Ineffective ------ Option 3: TD-IDF Vectorizer + Cosine Similarity
@@ -218,9 +238,11 @@ institution_fields = [
     ("University of California, Davis"),
     ("Sacramento State University"),
     ("UC Davis One Health Institute")
+    ("College of Engineering, Davis")
 ]
 
 def institution_similarity(data):
+    #To finish this, I simply need to copy>paste exactly how SCOPUS/UCPMS lists their organizations
     davis_affiliations = ["University of California, Davis", "UC Davis", "UCD", "UC Davis School of Medicine", 
                           "School of Veterinary Medicine", "Crocker Nuclear Laboratory", "Bodega Marine Laboratory", 
                           "UC Davis Genome Center", "UC Davis Health System", "UC Davis Health", "UC Davis Medical Center", 
@@ -228,7 +250,8 @@ def institution_similarity(data):
                           "UC Davis College of Agricultural and Environmental Sciences", "UC Davis College of Biological Sciences", 
                           "UC Davis College of Engineering", "UC Davis College of Letters and Science", "UC Davis Graduate School of Management", 
                           "UC Davis Extension", "UC Davis Institute of Transportation Studies", "UC Davis John Muir Institute of the Environment", 
-                          "UC Davis Tahoe Environmental Research Center", "UC Davis Center for Watershed Sciences", "UC Davis One Health Institute"]
+                          "UC Davis Tahoe Environmental Research Center", "UC Davis Center for Watershed Sciences", "UC Davis One Health Institute",
+                          "College of Engineering, Davis"]
     affiliated = 0
     affiliations = []
     for ucmps_institution in data:
@@ -240,7 +263,7 @@ def institution_similarity(data):
     print(f"Institution similarity results (1 for affiliated with UC Davis, 0 for not affiliated): {affiliations}")
     return affiliations
 
-#institution_similarity(institution_fields)
+institution_similarity(institution_fields)
 
 ##################CO-AUTHORSHIP FEATURE##########################
 #@Brief: This function checks for shared co-authors between the SCOPUS profiles and the UCPMS profiles

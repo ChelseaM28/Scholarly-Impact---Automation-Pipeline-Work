@@ -1,14 +1,14 @@
-#TEST RUN USING PRE- GENERATED CODE
 import pybliometrics
 from pybliometrics.scopus import AuthorRetrieval
 #from pybliometrics.scopus import AbstractRetrieval
 import pandas as pd
 
-#I need to get a new API key and add a UC Davis institutional token in order to 
+#I need to get a new API key and add a UC Davis institutional token in order to --> nope
 #Access the view of the json data that I need.
 
-config_path = '/home/codespace/.config/pybliometrics.cfg'
-#pybliometrics.utils.create_config([('fd4a1e920403dcc8566f15b756c77806', '')], force=True)
+#config_path = '/home/codespace/.config/pybliometrics.cfg'
+#pybliometrics.utils.create_config('[sensitive information]')
+
 
 '''def verify_author(scopus_id):
     try:
@@ -31,18 +31,18 @@ config_path = '/home/codespace/.config/pybliometrics.cfg'
         return "CD" # Page broken or ID invalid
 '''
 
-pybliometrics.scopus.init(config_path=config_path)
+pybliometrics.scopus.init()
 def verify_author(scopus_id):
     try:
-        clean_id = str(scopus_id).split('.')[0].strip()
+        #clean_id = str(scopus_id).split('.')[0].strip()
         
         # Start with 'LIGHT' view. If LIGHT works but STANDARD doesn't,
         # it's a 100% confirmation that your key lacks 'Enhanced' permissions.
-        au = AuthorRetrieval(clean_id, view='LIGHT', refresh=True)
+        au = AuthorRetrieval(scopus_id, refresh = True, view = 'STANDARD')
         
         data = {
-            "name": f"{au.given_name} {au.surname}",
-            "institution": au.affiliation_current[0].preferred_name if au.affiliation_current else "Unknown",
+            "name": f"{au.auid}",
+            #"institution": au.affiliation_current[0].preferred_name if au.affiliation_current else "Unknown",
         }
         return data
     except Exception as e:
@@ -51,8 +51,7 @@ def verify_author(scopus_id):
         return "CD"
 
 
-
-profile = verify_author("7004212771")
+profile = verify_author(35586253000)
 
 
 print(profile)

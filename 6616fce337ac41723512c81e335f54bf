@@ -1,0 +1,32 @@
+[Directories]
+AbstractRetrieval = /home/codespace/.cache/pybliometrics/Scopus/abstract_retrieval
+AffiliationRetrieval = /home/codespace/.cache/pybliometrics/Scopus/affiliation_retrieval
+AffiliationSearch = /home/codespace/.cache/pybliometrics/Scopus/affiliation_search
+AuthorRetrieval = /home/codespace/.cache/pybliometrics/Scopus/author_retrieval
+AuthorSearch = /home/codespace/.cache/pybliometrics/Scopus/author_search
+ArticleEntitlement = /home/codespace/.cache/pybliometrics/ScienceDirect/article_entitlement
+ArticleMetadata = /home/codespace/.cache/pybliometrics/ScienceDirect/article_metadata
+ArticleRetrieval = /home/codespace/.cache/pybliometrics/ScienceDirect/article_retrieval
+NonserialTitle = /home/codespace/.cache/pybliometrics/ScienceDirect/nonserial_title
+CitationOverview = /home/codespace/.cache/pybliometrics/Scopus/citation_overview
+ObjectMetadata = /home/codespace/.cache/pybliometrics/ScienceDirect/object_metadata
+ObjectRetrieval = /home/codespace/.cache/pybliometrics/ScienceDirect/object_retrieval
+PlumXMetrics = /home/codespace/.cache/pybliometrics/Scopus/plumx
+PublicationLookup = /home/codespace/.cache/pybliometrics/Scival/publication_lookup
+AuthorMetrics = /home/codespace/.cache/pybliometrics/Scival/author_metrics
+InstitutionLookupMetrics = /home/codespace/.cache/pybliometrics/Scival/institution_metrics
+TopicLookupMetrics = /home/codespace/.cache/pybliometrics/Scival/topic_metrics
+ScDirSubjectClassifications = /home/codespace/.cache/pybliometrics/ScienceDirect/subject_classification
+ScienceDirectSearch = /home/codespace/.cache/pybliometrics/ScienceDirect/science_direct_search
+ScopusSearch = /home/codespace/.cache/pybliometrics/Scopus/scopus_search
+SerialTitleSearch = /home/codespace/.cache/pybliometrics/Scopus/serial_search
+SerialTitleISSN = /home/codespace/.cache/pybliometrics/Scopus/serial_title
+SubjectClassifications = /home/codespace/.cache/pybliometrics/Scopus/subject_classification
+
+[Authentication]
+APIKey = 6616fce337ac41723512c81e335f54bf
+
+[Requests]
+Timeout = 20
+Retries = 5
+
