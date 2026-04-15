@@ -1,57 +1,23 @@
+import os
 import pybliometrics
-from pybliometrics.scopus import AuthorRetrieval
-#from pybliometrics.scopus import AbstractRetrieval
+from pathlib import Path
 import pandas as pd
+api_key = os.getenv('API_TOKEN')
+inst_token = os.getenv('INSTTOKEN')
+pybliometrics.init(keys = [api_key] , inst_tokens = [inst_token])
 
-#I need to get a new API key and add a UC Davis institutional token in order to --> nope
-#Access the view of the json data that I need.
-
-#config_path = '/home/codespace/.config/pybliometrics.cfg'
-#pybliometrics.utils.create_config('[sensitive information]')
+from pybliometrics.scopus import AuthorRetrieval
 
 
-'''def verify_author(scopus_id):
-    try:
-        clean_id = str(scopus_id).split('.')[0].strip()
-        # 1. Pull the profile
-        au = AuthorRetrieval(clean_id, view='STANDARD', refresh=True)
-        #ab = AbstractRetrieval("10.1016/j.softx.2019.100263")
-        #ab.title
-        
-        # 2. Get key data points
-        data = {
-            "name": f"{au.given_name} {au.surname}",
-            "institution": au.affiliation_current[0].preferred_name if au.affiliation_current else "Unknown",
-            "areas": [area.area for area in au.subject_areas],
-            "coauthors": [f"{c.given_name} {c.surname}" for c in au.get_coauthors()[:10]] # Get top 10
-        }
-        return data
-    except Exception as e:
-        print(e)
-        return "CD" # Page broken or ID invalid
+af = AuthorRetrieval(35586253000)
+#I DID IT OMGOMGOMGOMGOMGOMG I DID IT I DID IT I DID ITTTTTT!!!!!! HECK YAHHHHHHHHHHH!
+#IM SO HAPPY
+print(af)
+'''
+RETURNS:
+Abdel Ghaffar K. from College of Engineering in United States,
+published 182 document(s) since 1984 
+which were cited by 2,236 author(s) in 3,623 document(s) as of 2026-04-15
 '''
 
-pybliometrics.scopus.init()
-def verify_author(scopus_id):
-    try:
-        #clean_id = str(scopus_id).split('.')[0].strip()
-        
-        # Start with 'LIGHT' view. If LIGHT works but STANDARD doesn't,
-        # it's a 100% confirmation that your key lacks 'Enhanced' permissions.
-        au = AuthorRetrieval(scopus_id, refresh = True, view = 'STANDARD')
-        
-        data = {
-            "name": f"{au.auid}",
-            #"institution": au.affiliation_current[0].preferred_name if au.affiliation_current else "Unknown",
-        }
-        return data
-    except Exception as e:
-        # This will print the specific error (401, 404, etc.)
-        print(f"Error logic triggered: {e}") 
-        return "CD"
 
-
-profile = verify_author(35586253000)
-
-
-print(profile)
