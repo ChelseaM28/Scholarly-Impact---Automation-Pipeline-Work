@@ -8,7 +8,7 @@ import os
 '''api_key = os.getenv('API_TOKEN')
 inst_token = os.getenv('INSTTOKEN')
 '''
-
+print(os.getenv('TEST_SECRET'))
 '''
 pybliometrics.utils.create_config(Path(''))
 config_path = '/workspaces/Scholarly-Impact---Automation-Pipeline-Work/test'
