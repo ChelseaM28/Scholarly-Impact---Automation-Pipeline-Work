@@ -24,7 +24,8 @@ SerialTitleISSN = /home/codespace/.cache/pybliometrics/Scopus/serial_title
 SubjectClassifications = /home/codespace/.cache/pybliometrics/Scopus/subject_classification
 
 [Authentication]
-APIKey = 6616fce337ac41723512c81e335f54bf
+APIKey = $API_TOKEN
+InstToken = $INSTTOKEN
 
 [Requests]
 Timeout = 20

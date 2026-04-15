@@ -1,11 +1,18 @@
 import pybliometrics
 from pathlib import Path
+import os
+#In this block, I initialize my key and run pybliometrics.utils.create_config(mypath)
+#pybliometrics.init(keys = ['use the affiliationkey key']) # read API keys
 
-'''#In this block, I initialize my key and run pybliometrics.utils.create_config(mypath)
-pybliometrics.init(keys = ['use the affiliationkey key'])  # read API keys
-pybliometrics.utils.create_config(Path('6616fce337ac41723512c81e335f54bf'))'''
-config_path = '/workspaces/Scholarly-Impact---Automation-Pipeline-Work/6616fce337ac41723512c81e335f54bf'
-#config_name = '6616fce337ac41723512c81e335f54bf'
+#Not working. I will try to us the .env file instead.
+'''api_key = os.getenv('API_TOKEN')
+inst_token = os.getenv('INSTTOKEN')
+'''
+
+'''
+pybliometrics.utils.create_config(Path(''))
+config_path = '/workspaces/Scholarly-Impact---Automation-Pipeline-Work/test'
+
 pybliometrics.init(config_path = config_path)
 
 
@@ -16,3 +23,4 @@ from pybliometrics.scopus import AffiliationRetrieval
 af = AffiliationRetrieval('35586253000')
 
 
+'''

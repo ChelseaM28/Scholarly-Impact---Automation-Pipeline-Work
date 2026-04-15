@@ -29,6 +29,7 @@ data_fields = [
 #Option 4: wup_similarity from NLTK WordNet
 
 from nltk.corpus import wordnet as wn
+import numpy as np
 import nltk
 nltk.download('wordnet')
 nltk.download('wordnet_ic')
@@ -36,13 +37,13 @@ from nltk.corpus import wordnet_ic
 nltk.data.find('corpora/wordnet_ic') 
 brown_ic = wordnet_ic.ic('ic-brown.dat')
 
-#to clean up this function, i need to
+#NLTK implementation
 def research_area_similarity(data):
     #PLAN TO REPLACE ALL FOR LOOPS WITH NUMPY FUNCTIONS
     wun_similarity_scores = []
     resnik_similarity_scores = []
     lin_similarity_scores = []
-    combined_scores = []
+    nltk_scores = []
 
     #This for loop will create similarity scores using all three methods
     for ucmps_field, scopus_field in data:
@@ -128,24 +129,57 @@ def research_area_similarity(data):
         # I will need to add a check to skip the similarity calculation for any field that is just "science" or "sciences", since that is too general of a term to provide a strong signal of similarity. I can add this check before each similarity calculation and set the similarity scores to 0 if either field is "science" or "sciences".
        
         
-        print(f"Similarity scores for '{ucmps_field}' and '{scopus_field}': {wun_similarity_scores[-1]} ")
-        print(f"Resnik similarity scores for '{ucmps_field}' and '{scopus_field}': {resnik_similarity_scores[-1]} ")
-        print(f"Lin similarity scores for '{ucmps_field}' and '{scopus_field}': {lin_similarity_scores[-1]} ")
+    #~~~~~~~~~~~~~~~~~ISSUE~~~~~~~~~~~~~~~~~#
+    #I need to determine what the various outputs mean: -0.0 VS 0.0 VS 'error'
+    #and write the meanings clearly
+    print(f"Similarity scores for '{ucmps_field}' and '{scopus_field}': {wun_similarity_scores} \n\n")
+    print(f"Resnik similarity scores for '{ucmps_field}' and '{scopus_field}': {resnik_similarity_scores} \n\n")
+    print(f"Lin similarity scores for '{ucmps_field}' and '{scopus_field}': {lin_similarity_scores} \n\n")
+
+    #Using numpy for element-wise operations
+    # Convert list to NumPy array
+    wun_array = np.array(wun_similarity_scores)
+    print(wun_array)
+    res_array = np.array(resnik_similarity_scores)
+    lin_array = np.array(lin_similarity_scores)
+
+    # Use boolean indexing to filter out the target value
+    stripped_wun = wun_array[wun_array != 'error']
+    stripped_res = res_array[res_array != 'error']
+    stripped_lin = lin_array[lin_array != 'error']
+    # Convert back to a standard Python list if needed
+    wun_array = stripped_wun.tolist()
+    res_array = stripped_res.tolist()
+    lin_array = stripped_lin.tolist()
+
     
-    for i in wun_similarity_scores:
+    #~~~~~~~~~~~~~~~~~ISSUE~~~~~~~~~~~~~~~~~#
+    #Another spot where I combine the values. Will need to become more sophisticated.
+    '''for i in wun_array:
+        #wun_array[i] = sum(int(wun_array[i]))
+        
+    for i in res_array:
+        #res_array[i] = sum(int(res_array[i]))
+        continue
+    for i in lin_array:
+        #lin_array[i] = sum(int(lin_array[i]))
+        continue
+    for i in wun_array:
+        #~~~~~~~~~~~~~~~~~ISSUE~~~~~~~~~~~~~~~~~#
         #Will need a more sophisticated method later. How do we factor in a '2' value for CD?
-        combined_scores.append(wun_similarity_scores[i] + resnik_similarity_scores[i] + lin_similarity_scores[i])
-    return combined_scores   
+        nltk_scores.append(wun_array[i] + res_array[i] + lin_array[i])
+    print(f"nltk scores: {nltk_scores}")
+    return nltk_scores   '''
     
     
-    #return similarity_scores
+    
 #NEED TO USE NUMPY FOR CLEANER CODE LATER
-#research_area_similarity(data_fields)
+research_area_similarity(data_fields)
 #last thing to determine the best scoring option woudl 
 # be to normalize the scores and compare htem against each other. But JCN has been strangely inneffective So I will get rid of it.
 
 
-#Option 1: Field Transformer
+#Option 1: Field Transformer -- Could not get this one to work
 '''def research_area_similarity(ucmps_field, scopus_field):
     field_similarities = []
     from sentence_transformers import SentenceTransformer, util
@@ -158,11 +192,9 @@ def research_area_similarity(data):
     return(field_similarities)'''
 
 
-
-
 #Option 2: RapidFuzz Library for Fuzzy String Matching
 #Seems somewhat effective. Can be used in combination with nltk
-from rapidfuzz import fuzz, process
+'''from rapidfuzz import fuzz, process
 print("\n\n\n\n\n=================FUZZY RATIOS==================")
 print(fuzz.ratio("Computer Science", "Computer Science"))
 print(fuzz.ratio("Physics", "Physical Sciences"))  
@@ -171,6 +203,8 @@ print(fuzz.ratio("Math", "Statistics"))
 print(fuzz.ratio("Biology", "Plant Sciences")) 
 print(fuzz.ratio("Biology", "Biological")) 
 print(fuzz.ratio("Viticulture", "Enology")) 
+'''
+
 
 #Research Area Similarity Combination
 #@Brief: This section will normalize/standardize the institution matching from the 
@@ -180,8 +214,8 @@ def field_similarity_feature(data):
     for ucpms_field, scopus_field in data:
         fuzz = fuzz.ratio(str(ucpms_field), str(scopus_field))
     
-    for combined_similarity in research_area_similarity(data):
-        field_similarity.append(fuzz + combined_similarity)
+    for nltk_score in research_area_similarity(data):
+        field_similarity.append(fuzz + nltk_score)
     return field_similarity
 
 ##################FIELD FEATURE GRAVEYARD##########################
