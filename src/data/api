@@ -6,12 +6,12 @@ api_key = os.getenv('API_TOKEN')
 inst_token = os.getenv('INSTTOKEN')
 pybliometrics.init(keys = [api_key] , inst_tokens = [inst_token])
 
-from pybliometrics.scopus import AuthorRetrieval
+from pybliometrics.scopus import AuthorRetrieval, AffiliationRetrieval, SubjectClassifications,AbstractRetrieval 
 
+#MIGHT NEED TO INSTEAD USE ABSTRACT RETRIVAL TO GET CO AUTHORS
 
-af = AuthorRetrieval(35586253000)
-#I DID IT OMGOMGOMGOMGOMGOMG I DID IT I DID IT I DID ITTTTTT!!!!!! HECK YAHHHHHHHHHHH!
-#IM SO HAPPY
+af = AuthorRetrieval(author_id=35586253000, view = 'ENHANCED')
+
 print(af)
 '''
 RETURNS:
@@ -20,4 +20,5 @@ published 182 document(s) since 1984
 which were cited by 2,236 author(s) in 3,623 document(s) as of 2026-04-15
 '''
 
-
+#I DID IT OMGOMGOMGOMGOMGOMG I DID IT I DID IT I DID ITTTTTT!!!!!! HECK YAHHHHHHHHHHH!
+#IM SO HAPPY
