@@ -21,13 +21,19 @@ data_fields = [
     ("Math", "Statistics"),
     ("Medical sciences", "pediatrics"),
     ("Nutrition", "Medicine"),
-    ("Biology", "Plant Sciences")
+    ("Biology", "Plant Sciences"),
+    ("Spanish", "Portuguese"),
+    ("Cinema", "Digital Media"),
+    ("Plant Pathology","Psychology"),
+    ("Chemistry", "Chemical"),
+    ("Chemistry", "Chemistry")
 ]
 
 
 #example/draft code for research area similarity feature:
 #Option 4: wup_similarity from NLTK WordNet
 
+from rapidfuzz import fuzz, process
 from nltk.corpus import wordnet as wn
 import numpy as np
 import nltk
@@ -40,13 +46,14 @@ brown_ic = wordnet_ic.ic('ic-brown.dat')
 #NLTK implementation
 def research_area_similarity(data):
     #PLAN TO REPLACE ALL FOR LOOPS WITH NUMPY FUNCTIONS
-    wun_similarity_scores = []
-    resnik_similarity_scores = []
-    lin_similarity_scores = []
+    wun_similarity_scores = [] #actually wup similarity. Returns score from 0 to 1. Based on sysnonym sets/taxonomy
+    resnik_similarity_scores = [] #does not scale 0 to 1
+    lin_similarity_scores = [] #does not scale 0 to 1
     nltk_scores = []
 
     #This for loop will create similarity scores using all three methods
     for ucmps_field, scopus_field in data:
+        #Data clean. Get rid of the phrase "science"
         ucmps_field = ucmps_field.split()[0:2]
         scopus_field = scopus_field.split()[0:2]
         
@@ -69,8 +76,8 @@ def research_area_similarity(data):
             # whereas the method on the synset object will throw an error in that case.
             lin_first_to_first = wn.lin_similarity(ucmps_synsets_first[0], scopus_synsets_first[0], ic=brown_ic)
             
-        except:
-            
+        except Exception as e:
+  
             similarity_first_to_first = "error"
             resnik_first_to_first = "error"
             lin_first_to_first = "error"
@@ -87,7 +94,8 @@ def research_area_similarity(data):
                 lin_first_to_second = -1
 
                 print(f"Skipped similarity calculation for '{scopus_field}' because it is too general of a term to provide a strong signal of similarity.")
-        except:
+        except Exception as e:
+
             similarity_first_to_second = "error"
             resnik_first_to_second = "error"
             lin_first_to_second = "error"
@@ -101,7 +109,8 @@ def research_area_similarity(data):
                 resnik_second_to_first = -1
                 lin_second_to_first = -1
                 print(f"Skipped similarity calculation for '{ucmps_field}' because it is too general of a term to provide a strong signal of similarity.")
-        except:
+        except Exception as e:
+
             similarity_second_to_first = "error"
             resnik_second_to_first = "error"
             lin_second_to_first = "error"
@@ -116,7 +125,8 @@ def research_area_similarity(data):
                 lin_second_to_second = -1
                
                 print(f"Skipped similarity calculation for '{ucmps_field}' and '{scopus_field}' because one or both fields are too general of a term to provide a strong signal of similarity.")
-        except:
+        except Exception as e:
+
             similarity_second_to_second = "error"
             resnik_second_to_second = "error"
             lin_second_to_second = "error"
@@ -128,59 +138,62 @@ def research_area_similarity(data):
         #need to somehow remove the "science" term because it is so common across all fields that it is not a strong signal of similarity.
         # I will need to add a check to skip the similarity calculation for any field that is just "science" or "sciences", since that is too general of a term to provide a strong signal of similarity. I can add this check before each similarity calculation and set the similarity scores to 0 if either field is "science" or "sciences".
        
-        
-    #~~~~~~~~~~~~~~~~~ISSUE~~~~~~~~~~~~~~~~~#
-    #I need to determine what the various outputs mean: -0.0 VS 0.0 VS 'error'
-    #and write the meanings clearly
-    print(f"Similarity scores for '{ucmps_field}' and '{scopus_field}': {wun_similarity_scores} \n\n")
-    print(f"Resnik similarity scores for '{ucmps_field}' and '{scopus_field}': {resnik_similarity_scores} \n\n")
-    print(f"Lin similarity scores for '{ucmps_field}' and '{scopus_field}': {lin_similarity_scores} \n\n")
+    
 
-    #Using numpy for element-wise operations
-    # Convert list to NumPy array
-    wun_array = np.array(wun_similarity_scores)
-    print(wun_array)
-    res_array = np.array(resnik_similarity_scores)
+    wun_array = np.array(wun_similarity_scores) 
+    print(f"wun_arrays for all data:\n{wun_array}")
+    res_array = np.array(resnik_similarity_scores) 
     lin_array = np.array(lin_similarity_scores)
 
-    # Use boolean indexing to filter out the target value
-    stripped_wun = wun_array[wun_array != 'error']
-    stripped_res = res_array[res_array != 'error']
-    stripped_lin = lin_array[lin_array != 'error']
-    # Convert back to a standard Python list if needed
-    wun_array = stripped_wun.tolist()
-    res_array = stripped_res.tolist()
-    lin_array = stripped_lin.tolist()
+    #1. Use boolean indexing to filter out errors. Replace None with 0
+    #2. THEN correct against arbitrary value.correct all values <.25 to 0
+    for row in range(wun_array.shape[0]):
+        for column in range(wun_array.shape[1]):
+            #Part 1
+            if wun_array[row,column] == 'error' or type(wun_array[row,column]) == None:
+                wun_array[row, column] = 0
+            # Part 2
+            if float(wun_array[row,column]) > .25: 
+                wun_array[row,column] = .5
+                if float(wun_array[row,column]) > .5:
+                    wun_array[row,column] = 1
+            else:
+                wun_array[row,column] = 0 
+    for row in range(res_array.shape[0]):
+        for column in range(res_array.shape[1]):
+            if res_array[row,column] == 'error' or type(res_array[row,column]) == None:
+                res_array[row, column] = 0
+            # Part 2
+            if float(res_array[row,column]) > .25: 
+                res_array[row,column] = .5
+                if float(res_array[row,column]) > .5:
+                    res_array[row,column] = 1  
+            else:
+                res_array[row,column] = 0  
 
+    for row in range(lin_array.shape[0]):
+        for column in range(lin_array.shape[1]):
+            if lin_array[row,column] == 'error' or type(lin_array[row,column]) == None:
+                lin_array[row, column] = 0
+            # Part 2
+            if float(lin_array[row,column]) > .25: 
+                lin_array[row,column] = .5
+                if float(lin_array[row,column]) > .5:
+                    lin_array[row,column] = 1
+            else:
+                lin_array[row,column] = 0 
     
-    #~~~~~~~~~~~~~~~~~ISSUE~~~~~~~~~~~~~~~~~#
-    #Another spot where I combine the values. Will need to become more sophisticated.
-    '''for i in wun_array:
-        #wun_array[i] = sum(int(wun_array[i]))
-        
-    for i in res_array:
-        #res_array[i] = sum(int(res_array[i]))
-        continue
-    for i in lin_array:
-        #lin_array[i] = sum(int(lin_array[i]))
-        continue
-    for i in wun_array:
-        #~~~~~~~~~~~~~~~~~ISSUE~~~~~~~~~~~~~~~~~#
-        #Will need a more sophisticated method later. How do we factor in a '2' value for CD?
-        nltk_scores.append(wun_array[i] + res_array[i] + lin_array[i])
-    print(f"nltk scores: {nltk_scores}")
-    return nltk_scores   '''
-    
-    
-    
-#NEED TO USE NUMPY FOR CLEANER CODE LATER
-research_area_similarity(data_fields)
-#last thing to determine the best scoring option woudl 
-# be to normalize the scores and compare htem against each other. But JCN has been strangely inneffective So I will get rid of it.
 
+   
+    print(f"Error-stripped and 0/1-corrected wun_arrays for all data:\n{wun_array}")
+
+    #nltk_scores.append(wun_array[element] + res_array[element] + lin_array[element]) 
+    #return nltk_scores
+    
+   
 
 #Option 1: Field Transformer -- Could not get this one to work
-'''def research_area_similarity(ucmps_field, scopus_field):
+'''def research_area_similarity(ucmps_field, scopus_field)
     field_similarities = []
     from sentence_transformers import SentenceTransformer, util
 
@@ -194,7 +207,7 @@ research_area_similarity(data_fields)
 
 #Option 2: RapidFuzz Library for Fuzzy String Matching
 #Seems somewhat effective. Can be used in combination with nltk
-'''from rapidfuzz import fuzz, process
+'''
 print("\n\n\n\n\n=================FUZZY RATIOS==================")
 print(fuzz.ratio("Computer Science", "Computer Science"))
 print(fuzz.ratio("Physics", "Physical Sciences"))  
@@ -205,18 +218,35 @@ print(fuzz.ratio("Biology", "Biological"))
 print(fuzz.ratio("Viticulture", "Enology")) 
 '''
 
+#print(fuzz.ratio("Chemistry", "chemical")) #gives a ratio between 0 and 100. 46+ is likely pretty similar
+#A low score shouldn't be tossed out, but a high score should be weighted heavier
+
 
 #Research Area Similarity Combination
 #@Brief: This section will normalize/standardize the institution matching from the 
 #research_area_similarity function and the fuzz ratio
 def field_similarity_feature(data):
     field_similarity = []
+    fuzzy_score = 1
     for ucpms_field, scopus_field in data:
-        fuzz = fuzz.ratio(str(ucpms_field), str(scopus_field))
-    
+   
+        if fuzz.ratio(str(ucpms_field), str(scopus_field)) >= 40:
+            fuzzy_score = .5 #Somewhat similar
+            if fuzz.ratio(str(ucpms_field), str(scopus_field)) >= 60:
+                fuzzy_score = 1 #almost certianly similar
+        else:
+            fuzzy_score = 0
+        
     for nltk_score in research_area_similarity(data):
-        field_similarity.append(fuzz + nltk_score)
+        nltk_score = np.ndarray(nltk_score)
+        if nltk_score > .25:
+            nltk_score = 0.5 
+        else:
+            nltk_score = 0
+        field_similarity.append(fuzzy_score + nltk_score)
+    print(field_similarity)
     return field_similarity
+field_similarity_feature(data_fields)
 
 ##################FIELD FEATURE GRAVEYARD##########################
 #-----Highly Ineffective ------ Option 3: TD-IDF Vectorizer + Cosine Similarity
@@ -271,7 +301,7 @@ institution_fields = [
     ("Washington State University"),
     ("University of California, Davis"),
     ("Sacramento State University"),
-    ("UC Davis One Health Institute")
+    ("UC Davis One Health Institute"),
     ("College of Engineering, Davis")
 ]
 
@@ -297,7 +327,7 @@ def institution_similarity(data):
     print(f"Institution similarity results (1 for affiliated with UC Davis, 0 for not affiliated): {affiliations}")
     return affiliations
 
-institution_similarity(institution_fields)
+#institution_similarity(institution_fields)
 
 ##################CO-AUTHORSHIP FEATURE##########################
 #@Brief: This function checks for shared co-authors between the SCOPUS profiles and the UCPMS profiles

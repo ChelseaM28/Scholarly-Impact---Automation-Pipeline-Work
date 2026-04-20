@@ -154,7 +154,8 @@ X_train = [x for x in feature_extraction(data)]  #Using the output of the featur
 y_train = [0, 1, 2, 1, 0] 
 X_test = [x for x in feature_extraction(data_test)]  #Using the output of the feature extraction function as features
 #y_test = [0, 0, 2, 1, 0] 
-
+'''
+'''
 #REVISIT THIS!!: 
 #I don't know if the ML model can output 2 for inconclusive cases, but I will include it in the training data and see 
 # if the model can learn to identify those cases as well.
