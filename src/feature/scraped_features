@@ -155,10 +155,11 @@ def research_area_similarity(data):
             # Part 2
             if float(wun_array[row,column]) > .25: 
                 wun_array[row,column] = .5
-                if float(wun_array[row,column]) > .5:
-                    wun_array[row,column] = 1
             else:
                 wun_array[row,column] = 0 
+            if float(wun_array[row,column]) > .5:
+                wun_array[row,column] = 1
+            
     for row in range(res_array.shape[0]):
         for column in range(res_array.shape[1]):
             if res_array[row,column] == 'error' or type(res_array[row,column]) == None:
@@ -166,10 +167,11 @@ def research_area_similarity(data):
             # Part 2
             if float(res_array[row,column]) > .25: 
                 res_array[row,column] = .5
-                if float(res_array[row,column]) > .5:
-                    res_array[row,column] = 1  
             else:
                 res_array[row,column] = 0  
+            if float(res_array[row,column]) > .5:
+                res_array[row,column] = 1  
+            
 
     for row in range(lin_array.shape[0]):
         for column in range(lin_array.shape[1]):
@@ -178,17 +180,32 @@ def research_area_similarity(data):
             # Part 2
             if float(lin_array[row,column]) > .25: 
                 lin_array[row,column] = .5
-                if float(lin_array[row,column]) > .5:
-                    lin_array[row,column] = 1
             else:
                 lin_array[row,column] = 0 
-    
-
-   
+            if float(lin_array[row,column]) > .5:
+                lin_array[row,column] = 1
+            
     print(f"Error-stripped and 0/1-corrected wun_arrays for all data:\n{wun_array}")
+    #NEXT! Sum the contents of each list and replace the list with the sum.
+    
+    for row in range(wun_array.shape[0]):
+        print(wun_array[row,])
+        summed_wun_array = [np.sum(wun_array.astype(float), axis = 1)]
 
-    #nltk_scores.append(wun_array[element] + res_array[element] + lin_array[element]) 
-    #return nltk_scores
+    for row in range(res_array.shape[0]):
+        summed_res_array = [np.sum(res_array.astype(float), axis = 1)]
+        
+    for row in range(lin_array.shape[0]):
+        summed_lin_array = [np.sum(lin_array.astype(float), axis = 1)]
+        
+        
+    print(f"Summed wun_arrays for all data:\n{summed_wun_array}")
+
+    for i in range(len(summed_wun_array)):
+        nltk_scores.append(summed_wun_array[i] + summed_res_array[i] + summed_lin_array[i]) 
+   
+    print(f"final nltk scores: \n\n{nltk_scores}")
+    return nltk_scores
     
    
 
