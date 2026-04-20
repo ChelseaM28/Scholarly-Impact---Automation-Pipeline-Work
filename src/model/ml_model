@@ -34,7 +34,7 @@ def feature_extraction(data):
         # and disambiguation results (+any other fuuture features) for each pair to the features list.
         features.append([disambiguation_feature.name_similarity(data)[i], #done
                          disambiguation_feature.disambiguate_names(data)[i], #done
-                         scraped_features.field_similarity_feature(data)[i], #80% done
+                         scraped_features.field_similarity_feature(data)[i], #95% done
                          scraped_features.institution_similarity(data)[i],  #90% done
                          scraped_features.coauthorship_similarity(data)[i]]) #not started
     print(f"Extracted features are as follows: 'Name Similarity, Disambiguation, Research Area, Institution, Co-authorship':\n {features}\n")

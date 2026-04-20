@@ -130,36 +130,10 @@ def disambiguate_names(data):
 
 
 
-#Remove this prior draft once import errors are resolved:
-'''##################FEEDER FUNCTION UPDATE##########################
-#@Brief: This function incorporates all features in this file into a format the ML model can use.
-
-def feature_extraction(data):
-    features = []
-    for i in range(len(data)):
-        #The ML model needs a list of features for each name pair, so I will append the name similarity 
-        # and disambiguation results (+any other fuuture features) for each pair to the features list.
-        features.append([name_similarity(data)[i], disambiguate_names(data)[i]]) 
-    print(f"Extracted features are as follows: 'Initial Glance, Name Similarity':\n {features}\n")
-    return features'''
-
-#Remove this prior draft once import errors are resolved:
-'''##################MACHINE LEARNING UPDATE##########################
-#@Brief: This is the ML implementation using this file's features. 
-#In terminal: pip install scikit-learn
-
-from sklearn.linear_model import LogisticRegression
-
-X_train = [x for x in feature_extraction(data)]  #Using the output of the feature extraction function as features
-y_train = [0, 1, 2, 1, 0] 
-X_test = [x for x in feature_extraction(data_test)]  #Using the output of the feature extraction function as features
-#y_test = [0, 0, 2, 1, 0] 
-'''
-'''
 #REVISIT THIS!!: 
 #I don't know if the ML model can output 2 for inconclusive cases, but I will include it in the training data and see 
 # if the model can learn to identify those cases as well.
-
+'''
 model = LogisticRegression()
 model.fit(X_train, y_train)
 

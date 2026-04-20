@@ -93,7 +93,6 @@ def research_area_similarity(data):
                 resnik_first_to_second = -1
                 lin_first_to_second = -1
 
-                print(f"Skipped similarity calculation for '{scopus_field}' because it is too general of a term to provide a strong signal of similarity.")
         except Exception as e:
 
             similarity_first_to_second = "error"
@@ -108,7 +107,6 @@ def research_area_similarity(data):
                 similarity_second_to_first = -1
                 resnik_second_to_first = -1
                 lin_second_to_first = -1
-                print(f"Skipped similarity calculation for '{ucmps_field}' because it is too general of a term to provide a strong signal of similarity.")
         except Exception as e:
 
             similarity_second_to_first = "error"
@@ -123,8 +121,7 @@ def research_area_similarity(data):
                 similarity_second_to_second = -1
                 resnik_second_to_second = -1     
                 lin_second_to_second = -1
-               
-                print(f"Skipped similarity calculation for '{ucmps_field}' and '{scopus_field}' because one or both fields are too general of a term to provide a strong signal of similarity.")
+
         except Exception as e:
 
             similarity_second_to_second = "error"
@@ -132,12 +129,12 @@ def research_area_similarity(data):
             lin_second_to_second = "error"
             
         
-        wun_similarity_scores.append([similarity_first_to_first, similarity_first_to_second, similarity_second_to_first, similarity_second_to_second])
-        resnik_similarity_scores.append([resnik_first_to_first,resnik_first_to_second,resnik_second_to_first,resnik_second_to_second])
-        lin_similarity_scores.append([lin_first_to_first,lin_first_to_second,lin_second_to_first,lin_second_to_second])
-        #need to somehow remove the "science" term because it is so common across all fields that it is not a strong signal of similarity.
-        # I will need to add a check to skip the similarity calculation for any field that is just "science" or "sciences", since that is too general of a term to provide a strong signal of similarity. I can add this check before each similarity calculation and set the similarity scores to 0 if either field is "science" or "sciences".
-       
+        wun_similarity_scores.append([similarity_first_to_first, similarity_first_to_second, 
+                                      similarity_second_to_first, similarity_second_to_second])
+        resnik_similarity_scores.append([resnik_first_to_first,resnik_first_to_second,
+                                         resnik_second_to_first,resnik_second_to_second])
+        lin_similarity_scores.append([lin_first_to_first,lin_first_to_second,
+                                      lin_second_to_first,lin_second_to_second])
     
 
     wun_array = np.array(wun_similarity_scores) 
@@ -205,43 +202,15 @@ def research_area_similarity(data):
         nltk_scores.append(summed_wun_array[i] + summed_res_array[i] + summed_lin_array[i]) 
    
     print(f"final nltk scores: \n\n{nltk_scores}")
+
     return nltk_scores
     
-   
-
-#Option 1: Field Transformer -- Could not get this one to work
-'''def research_area_similarity(ucmps_field, scopus_field)
-    field_similarities = []
-    from sentence_transformers import SentenceTransformer, util
-
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    #getting an error about unauthenticated 
-    similarity = util.cos_sim(model.encode(ucmps_field, convert_to_tensor=True), model.encode(scopus_field, convert_to_tensor=True))
-    field_similarities.append(similarity.item())
-    print(similarity.item())
-    return(field_similarities)'''
-
-
-#Option 2: RapidFuzz Library for Fuzzy String Matching
-#Seems somewhat effective. Can be used in combination with nltk
-'''
-print("\n\n\n\n\n=================FUZZY RATIOS==================")
-print(fuzz.ratio("Computer Science", "Computer Science"))
-print(fuzz.ratio("Physics", "Physical Sciences"))  
-print(fuzz.ratio("Chemistry", "Chemical Sciences"))
-print(fuzz.ratio("Math", "Statistics"))   
-print(fuzz.ratio("Biology", "Plant Sciences")) 
-print(fuzz.ratio("Biology", "Biological")) 
-print(fuzz.ratio("Viticulture", "Enology")) 
-'''
-
-#print(fuzz.ratio("Chemistry", "chemical")) #gives a ratio between 0 and 100. 46+ is likely pretty similar
-#A low score shouldn't be tossed out, but a high score should be weighted heavier
 
 
 #Research Area Similarity Combination
 #@Brief: This section will normalize/standardize the institution matching from the 
 #research_area_similarity function and the fuzz ratio
+
 def field_similarity_feature(data):
     field_similarity = []
     fuzzy_score = 1
@@ -253,56 +222,12 @@ def field_similarity_feature(data):
                 fuzzy_score = 1 #almost certianly similar
         else:
             fuzzy_score = 0
-        
+        #A low score shouldn't be tossed out!!! but a high score should be weighted heavier
     for nltk_score in research_area_similarity(data):
-        nltk_score = np.ndarray(nltk_score)
-        if nltk_score > .25:
-            nltk_score = 0.5 
-        else:
-            nltk_score = 0
-        field_similarity.append(fuzzy_score + nltk_score)
+        field_similarity.append(fuzzy_score + nltk_score) #LAST THING TO DO HERE: CLEAN UP THIS LOGIC
     print(field_similarity)
     return field_similarity
 field_similarity_feature(data_fields)
-
-##################FIELD FEATURE GRAVEYARD##########################
-#-----Highly Ineffective ------ Option 3: TD-IDF Vectorizer + Cosine Similarity
-'''#Not to be used -- e.g.: statistics and math and biology and biological 
-                            are deemed irrelevant using this method
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
-
-# Define your corpus and the single query string
-documents = [
-    "Computer Science",
-    "Biological Sciences",
-    "Physical Sciences",
-    "Chemical Sciences",
-    "Mathematical Sciences", 
-    "Biology",
-    "Physics",
-    "Chemistry",
-    "Mathematics"
-]
-query_string = "Biology"
-
-# Initialize the vectorizer (default uses unigrams, smooth_idf=True, sublinear_tf=False)
-vectorizer = TfidfVectorizer()
-
-# Fit and transform the corpus
-tfidf_matrix = vectorizer.fit_transform(documents)
-
-# Transform the single query string
-query_vector = vectorizer.transform([query_string])
-
-# Calculate cosine similarity between the query and all documents
-similarities = cosine_similarity(query_vector, tfidf_matrix).flatten()
-
-# Display results
-for i, score in enumerate(similarities):
-    print(f"Document {i}: {score:.4f} - {documents[i]}")   
-'''
 
 
 
