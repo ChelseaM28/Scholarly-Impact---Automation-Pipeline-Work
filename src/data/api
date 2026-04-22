@@ -10,15 +10,17 @@ from pybliometrics.scopus import AuthorRetrieval, AffiliationRetrieval, SubjectC
 
 #MIGHT NEED TO INSTEAD USE ABSTRACT RETRIVAL TO GET CO AUTHORS
 
-af = AuthorRetrieval(author_id=35586253000, view = 'ENHANCED')
+author = AuthorRetrieval(author_id=35586253000, view = 'ENHANCED') #author name - scopus id
+affiliation = author.affiliation_current #affiliation
+co_authors = author.get_coauthors() #co auuthors
+field = author.subject_areas #research field
 
-print(af)
-'''
-RETURNS:
-Abdel Ghaffar K. from College of Engineering in United States,
-published 182 document(s) since 1984 
-which were cited by 2,236 author(s) in 3,623 document(s) as of 2026-04-15
-'''
 
-#I DID IT OMGOMGOMGOMGOMGOMG I DID IT I DID IT I DID ITTTTTT!!!!!! HECK YAHHHHHHHHHHH!
-#IM SO HAPPY
+print(f"Author: {author}\n\n")
+print(f"Affiliation: {affiliation}\n\n")
+print(f"Co-authors: {co_authors}\n\n")
+print(f"Field: {field}")
+
+'''
+API IS CORRECTLY RETURNING ALL NEEDED INFORMATION
+'''
