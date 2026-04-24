@@ -9,6 +9,14 @@ pybliometrics.init(keys = [api_key] , inst_tokens = [inst_token])
 from pybliometrics.scopus import AuthorRetrieval, AffiliationRetrieval, SubjectClassifications,AbstractRetrieval 
 
 
+#HEY! Use this to save the data??
+'''
+import json
+with open('scopus_cleaned.json', 'w') as f:
+    json.dump(cleaned_data, f, indent=2)
+'''
+
+
 '''
 I need to repeat this process for every SCOPUS author in my dataset and clean the results
 so they can be transferred to the raw_data_converter and then the features. Maybe for each 
@@ -39,7 +47,7 @@ def retrieve_scopus_data():
     failed_ids = []
 
     print("Creating dictionary with SCOPUS API data for training the model...\n")
-    print("This may take a few minutes...\n")
+    print("This may take a few moments...\n")
 
     try:
         for scopus_id in df['Identifier']: #this is the column in the csv file that contains the scopus ids

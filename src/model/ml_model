@@ -40,7 +40,10 @@ def feature_extraction(data):
         
     print(f"Extracted features are as follows: 'Name Similarity, Disambiguation, Research Area, Institution':\n {features}\n")
     return features
-feature_extraction(#THE DATA I ALREADY GOT FROM PRIOR STEPS) #placeholder for the actual data input
+
+feature_extraction(CONVERTER_OUTPUT) #placeholder for the actual data input
+
+
 
 ##################MACHINE LEARNING MODEL##########################
 #@Brief: This function implements the ML model using the features extracted in this file. 
