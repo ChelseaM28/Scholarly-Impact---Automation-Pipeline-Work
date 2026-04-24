@@ -1,0 +1,121 @@
+#this script will take raw data and convert it into a format that can be used for the features. 
+# Author: Chelsea Momoh
+# Date: 2026-04-26
+# Version: 1.0
+
+
+
+'''
+The .csv file original format is:
+Name,Email,Created When,UCPMS Profile link,Department,Primary group,Is current staff,Last login,Identifier scheme,Identifier,Pending,Decision,Claimed,Correct ID,Notes,SCOPUS SITE,Google Scholar search,UCD Site
+
+The required fields for the features are: name (for disambiguation), identifier(for the APi to retrieve ), Correct ID
+
+- The disambiguation feature was built using data in this format: 
+
+data_test = [
+    ("B. Carlos M", "MENDEZ, Carlos B"),       
+    ("SMITH, John A", "Smuth, John"),         
+    ("LEE, D", "LEE, Daniel"),              
+    ("NGUYEN, Linh T", "Nguyen, Linh Thi"),      
+    ("GARCIA, Ramon F", "Garcia, R. J.") 
+]
+
+Where the first name is from UCPMS or SCOPUS and the second name is from the other source. 
+The feature functions will compare the first and second name in each tuple to determine the similarity between them.
+
+- The research area and institution features were built using data in this format:
+
+data_fields = [
+    ("Viticulture", "Enology"),
+    ("Math", "Statistics"),
+    ("Medical sciences", "pediatrics"),
+    ("Nutrition", "Medicine"),
+    ("Biology", "Plant Sciences"),
+    ("Spanish", "Portuguese"),
+    ("Cinema", "Digital Media"),
+    ("Plant Pathology","Psychology"),
+    ("Chemistry", "Chemical"),
+    ("Chemistry", "Chemistry")
+]
+
+Where the first token is from UCPMS or SCOPUS and the second token is from the other source. 
+
+The cleaned API data is currently found in the script "api" and can be accessed using "clean_author_data(retrieve_scopus_data())"
+The data is in a dictionary of of dictionaries, with each sub dictionary having the following format:
+{
+  "name": "Leonard Abbeduto",
+  "affiliations": [
+    {
+      "institution": "Department of Psychiatry and Behavioral Sciences",
+      "city": "Sacramento",
+      "country": "United States"
+    }
+  ],
+  "fields": [
+    "Speech and Hearing",
+    "Cognitive Neuroscience",
+    "Clinical Psychology",
+    "Psychiatry and Mental Health",
+    "Psychology (miscellaneous)",
+    "Genetics",
+    "Genetics (clinical)",
+    "Developmental and Educational Psychology",
+    "Behavioral Neuroscience",
+    "Language and Linguistics",
+    "Pediatrics, Perinatology and Child Health",
+    "Neuropsychology and Physiological Psychology",
+    "Instrumentation",
+    "Linguistics and Language",
+    "Neurology (clinical)",
+    "Neuroscience (all)",
+    "Multidisciplinary",
+    "Atomic and Molecular Physics, and Optics",
+    "Developmental Biology",
+    "Rehabilitation",
+    "Arts and Humanities (miscellaneous)",
+    "Biochemistry, Genetics and Molecular Biology (all)",
+    "Social Sciences (miscellaneous)",
+    "Cellular and Molecular Neuroscience",
+    "Neurology",
+    "Medicine (all)",
+    "Biological Psychiatry",
+    "Radiology, Nuclear Medicine and Imaging",
+    "Psychology (all)",
+    "Developmental Neuroscience",
+    "Pathology and Forensic Medicine",
+    "Health Professions  (miscellaneous)"
+  ]
+}
+
+# The tricky part is every author has a different number of affiliations and fields.
+I need to somehow compare EVERY SCOPUS affiliation info point to a UCPMS affiliation info point and EVERY SCOPUS field to every UCPMS field.
+
+Each feature function outputs a list of floats or integers(need to verify the dimensions) and the lists will be combined and fed 
+into the ML model using this procedure:
+
+for i in range(len(data)):
+        #The ML model needs a list of features for each name pair, so I will append the name similarity 
+        # and disambiguation results (+any other fuuture features) for each pair to the features list.
+        features.append([disambiguation_feature.name_similarity(data)[i], #done
+                         disambiguation_feature.disambiguate_names(data)[i], #done
+                         scraped_features.field_similarity_feature(data)[i], #done
+                         scraped_features.institution_similarity(data)[i]])  #done
+
+
+This list will be zipped with the known decision values (converted into 0,1,or 2 for no match, 
+match, or inconclusive) for 80% ofthe training data and fed into the ML model.
+
+
+To convert all this data into the proper formats, I will 
+1. write a function to take all the relevant information from the UCPMS file
+2. convert the SCOPUS fields list into a single string for each author (same for affiliations) so that they can be compared to the UCPMS fields and affiliations (also converted into single strings)
+3. write a function to take all this cleaned and converted data and put it into the format that the feature functions can use (i.e. the format of data_test and data_fields above).
+    a. I will need 3 lists- one for the name pairs, one for the field pairs, and one for the institution pairs. 
+        - These lists will be created by zipping the UCPMS data and the SCOPUS single string field lists together (for fields and affiliations). 
+        - The name pairs list will be created by zipping the UCPMS names and the SCOPUS names together and do not require any conversion since the feature functions can handle the name formats as they are.
+
+Once these functions are written, I will have the data in the proper format to be fed into the feature functions and then into the ML model.
+'''
+
+

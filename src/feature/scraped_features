@@ -589,7 +589,6 @@ def field_similarity_feature(data):
             processor=utils.default_process
         )
 
-        # tighter, more realistic thresholds
         if fuzzy_raw >= 80:
             fuzzy_score = 1
         elif fuzzy_raw >= 60:
@@ -600,22 +599,6 @@ def field_similarity_feature(data):
         field_similarity.append(fuzzy_score + nltk_score)
 
     return field_similarity
-    '''Re-written code
-    field_similarity = []
-    
-    for ucpms_field, scopus_field in data:
-        fuzzy_score = 0
-        if fuzz.ratio(str(ucpms_field), str(scopus_field)) >= 40:
-            fuzzy_score = .5 #Somewhat similar
-            if fuzz.ratio(str(ucpms_field), str(scopus_field)) >= 60:
-                fuzzy_score = 1 #almost certianly similar
-        else:
-            fuzzy_score = 0
-        #A low score shouldn't be tossed out!!! but a high score should be weighted heavier
-    for nltk_score in research_area_similarity(data):
-        field_similarity.append(fuzzy_score + nltk_score) #LAST THING TO DO HERE: CLEAN UP THIS LOGIC
-    print(field_similarity)
-    return field_similarity'''
 
 
 #field_similarity_feature(data_fields)

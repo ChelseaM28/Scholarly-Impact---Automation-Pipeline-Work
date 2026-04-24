@@ -8,6 +8,148 @@ pybliometrics.init(keys = [api_key] , inst_tokens = [inst_token])
 
 from pybliometrics.scopus import AuthorRetrieval, AffiliationRetrieval, SubjectClassifications,AbstractRetrieval 
 
+
+'''
+I need to repeat this process for every SCOPUS author in my dataset and clean the results
+so they can be transferred to the raw_data_converter and then the features. Maybe for each 
+SCOPUS ID, I can create a dictionary  with the author name, affiliation, co authors, and field.
+At that point the raw data converter can take teh dictionary and create the necessary list 
+formats for the features.
+
+Do i create many dictionaries or just one? I think I can create one big dictionary with the 
+SCOPUS ID as the key and the author name, affiliation, co authors, and field as the values. 
+Then I can use this dictionary to create the necessary list formats for the features.
+'''
+
+#essentially, for each scopus id in csv file (titled "training data" and located in the data file), 
+# dictionary[scopus id] = {"author name": author name, "affiliation": affiliation, "co authors": co authors, "field": field}
+#However, I need to only take the SCOPUS IDs, not the ORCID IDs, so I will need to clean the csv file to only include the SCOPUS IDs and then use those to create the dictionary.
+def retrieve_scopus_data():
+    print("Retrieving SCOPUS IDs from csv file...\n")
+    scopus_api_data = {}
+    df = pd.read_csv('src/data/training_data.csv') #this is the csv file that contains the scopus ids and other data that I will use for training the model
+
+    print("Removing Non-SCOPUS IDs...\n")
+    #Removing orcid ids (indicated in the csv file by the identifier scheme column) and any rows with missing scopus ids
+    df = df[df['Identifier scheme'] == 'Scopus ID']
+    df = df[df['Identifier'] != 'NaN']
+
+
+    print("Creating list of failed/merged SCOPUS IDs...\n")
+    failed_ids = []
+
+    print("Creating dictionary with SCOPUS API data for training the model...\n")
+    print("This may take a few minutes...\n")
+
+    try:
+        for scopus_id in df['Identifier']: #this is the column in the csv file that contains the scopus ids
+            author = AuthorRetrieval(author_id=scopus_id, view = 'ENHANCED')
+            affiliation = author.affiliation_current
+            #co_authors = author.get_coauthors()
+            field = author.subject_areas
+            
+            scopus_api_data[scopus_id] = {"author name": author, "affiliation": affiliation, "field": field}
+    except Exception as e:
+        print(f"  ✗ Failed for ID {scopus_id}: {e}")
+        failed_ids.append(scopus_id)
+
+
+    print("Completed Data Retrieval. Cleaning output...\n")
+    return scopus_api_data, failed_ids
+
+def clean_author_data(scopus_api_data):
+    cleaned = {}
+    
+    for scopus_id, data in scopus_api_data.items():
+        author = data["author name"]
+        
+        # Extract actual name
+        name = f"{author.given_name} {author.surname}" if author.given_name and author.surname else author.indexed_name
+
+        # Extract affiliations -> list of institution names
+        affiliations = []
+        if data["affiliation"]:
+            for aff in data["affiliation"]:
+                affiliations.append({
+                    "institution": aff.preferred_name,
+                    "city": aff.city,
+                    "country": aff.country
+                })
+
+        # Extract subject areas -> list of area names only
+        fields = []
+        if data["field"]:
+            for f in data["field"]:
+                fields.append(f.area)
+
+        cleaned[scopus_id] = {
+            "name": name,
+            "affiliations": affiliations,
+            #"co_authors": co_authors,
+            "fields": fields
+        }
+
+    return cleaned
+
+selected_data = clean_author_data(retrieve_scopus_data())
+
+'''
+The cleaned API datais currently in a dictionary of of dictionaries, with each sub dictionary having the following format:
+{
+  "name": "Leonard Abbeduto",
+  "affiliations": [
+    {
+      "institution": "Department of Psychiatry and Behavioral Sciences",
+      "city": "Sacramento",
+      "country": "United States"
+    }
+  ],
+  "fields": [
+    "Speech and Hearing",
+    "Cognitive Neuroscience",
+    "Clinical Psychology",
+    "Psychiatry and Mental Health",
+    "Psychology (miscellaneous)",
+    "Genetics",
+    "Genetics (clinical)",
+    "Developmental and Educational Psychology",
+    "Behavioral Neuroscience",
+    "Language and Linguistics",
+    "Pediatrics, Perinatology and Child Health",
+    "Neuropsychology and Physiological Psychology",
+    "Instrumentation",
+    "Linguistics and Language",
+    "Neurology (clinical)",
+    "Neuroscience (all)",
+    "Multidisciplinary",
+    "Atomic and Molecular Physics, and Optics",
+    "Developmental Biology",
+    "Rehabilitation",
+    "Arts and Humanities (miscellaneous)",
+    "Biochemistry, Genetics and Molecular Biology (all)",
+    "Social Sciences (miscellaneous)",
+    "Cellular and Molecular Neuroscience",
+    "Neurology",
+    "Medicine (all)",
+    "Biological Psychiatry",
+    "Radiology, Nuclear Medicine and Imaging",
+    "Psychology (all)",
+    "Developmental Neuroscience",
+    "Pathology and Forensic Medicine",
+    "Health Professions  (miscellaneous)"
+  ]
+}
+'''
+
+'''The tricky part is every author has a different number of affiliations and fields. 
+So when passing all this data into the raw_data_converter, I will need to decide how to handle this.
+'''
+
+
+
+
+'''TEST RUN
+
 #MIGHT NEED TO INSTEAD USE ABSTRACT RETRIVAL TO GET CO AUTHORS
 
 author = AuthorRetrieval(author_id=35586253000, view = 'ENHANCED') #author name - scopus id
@@ -15,12 +157,11 @@ affiliation = author.affiliation_current #affiliation
 co_authors = author.get_coauthors() #co auuthors
 field = author.subject_areas #research field
 
-
 print(f"Author: {author}\n\n")
 print(f"Affiliation: {affiliation}\n\n")
 print(f"Co-authors: {co_authors}\n\n")
 print(f"Field: {field}")
 
-'''
+
 API IS CORRECTLY RETURNING ALL NEEDED INFORMATION
 '''
