@@ -169,4 +169,6 @@ def zipper(ucpms_names, ucpms_fields, ucpms_institutions, scopus_api_data):
     
     return name_pairs, field_pairs, institution_pairs
 
+#I think i need to print all the API data. I worry I haven't been able to retrieve all 
+# the data for some reason and I want to make sure I have it all before I start converting it.
 #Next up: run these raw_data_converter functions and save the pairs. Feed them into the ML Model.
