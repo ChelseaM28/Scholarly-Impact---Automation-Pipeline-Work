@@ -41,7 +41,7 @@ data_fields = [
 
 Where the first token is from UCPMS or SCOPUS and the second token is from the other source. 
 
-The cleaned API data is currently found in the script "api" and can be accessed using "clean_author_data(retrieve_scopus_data())"
+The cleaned API data is currently found in the file scopus_cleaned.json. 
 The data is in a dictionary of of dictionaries, with each sub dictionary having the following format:
 {
   "name": "Leonard Abbeduto",
@@ -118,4 +118,55 @@ To convert all this data into the proper formats, I will
 Once these functions are written, I will have the data in the proper format to be fed into the feature functions and then into the ML model.
 '''
 
+import pandas as pd
 
+def retrieve_UCPMS_data():
+    df = pd.read_csv('/workspaces/Scholarly-Impact---Automation-Pipeline-Work/src/data/training_data.csv')
+    df = df[df['Identifier scheme'] == 'Scopus ID']
+    df = df[df['Identifier'] != 'NaN']
+    #remove the row with the failed scopus ID so the comparisons aren't mismatched
+    df = df[df['Identifier'] != '7102732138']
+    #convert the ucpms information into three lists- one for the names, one for the fields, and one for the institutions. It will not be zipped yet
+    ucpms_names = df['Name'].tolist()
+    ucpms_fields = df['Department'].tolist()
+    #It turns out that ucpms does not have a separate institution column, so I will just 
+    # use the department column for both fields and institutions. This is not ideal but it is what I have to work with.
+    ucpms_institutions = df['Department'].tolist() 
+    return ucpms_names, ucpms_fields, ucpms_institutions
+
+#Next I'll write a function to convert the SCOPUS fields and affiliations into single strings and the convert those into lists
+
+def listifying_scopus_data(scopus_api_data):
+    for scopus_id, data in scopus_api_data.items():
+        # Convert fields list to a single string
+        data["fields"] = ", ".join(data["fields"])
+        
+        # Convert affiliations list to a single string
+        affiliations_str = []
+        for aff in data["affiliations"]:
+            aff_str = f"{aff['institution']} ({aff['city']}, {aff['country']})"
+            affiliations_str.append(aff_str)
+        data["affiliations"] = "; ".join(affiliations_str)
+
+    return scopus_api_data
+
+#Next, I simply need to zip the three lists of UCPMS data with the corresponding SCOPUS data to create the name pairs
+
+def zipper(ucpms_names, ucpms_fields, ucpms_institutions, scopus_api_data):
+    name_pairs = []
+    field_pairs = []
+    institution_pairs = []
+    
+    for scopus_id, data in scopus_api_data.items():
+        scopus_name = data["author name"].indexed_name
+        scopus_fields = data["fields"]
+        scopus_institutions = data["affiliations"]
+        
+        for ucpms_name, ucpms_field, ucpms_institution in zip(ucpms_names, ucpms_fields, ucpms_institutions):
+            name_pairs.append((ucpms_name, scopus_name))
+            field_pairs.append((ucpms_field, scopus_fields))
+            institution_pairs.append((ucpms_institution, scopus_institutions))
+    
+    return name_pairs, field_pairs, institution_pairs
+
+#Next up: run these raw_data_converter functions and save the pairs. Feed them into the ML Model.

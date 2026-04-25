@@ -10,11 +10,9 @@ from pybliometrics.scopus import AuthorRetrieval, AffiliationRetrieval, SubjectC
 
 
 #HEY! Use this to save the data??
-'''
-import json
-with open('scopus_cleaned.json', 'w') as f:
-    json.dump(cleaned_data, f, indent=2)
-'''
+
+
+
 
 
 '''
@@ -62,8 +60,8 @@ def retrieve_scopus_data():
         failed_ids.append(scopus_id)
 
 
-    print("Completed Data Retrieval. Cleaning output...\n")
-    return scopus_api_data, failed_ids
+    print("Completed Data Retrieval. Data has been saved.\n")
+    return scopus_api_data
 
 def clean_author_data(scopus_api_data):
     cleaned = {}
@@ -99,8 +97,11 @@ def clean_author_data(scopus_api_data):
 
     return cleaned
 
-selected_data = clean_author_data(retrieve_scopus_data())
-
+'''selected_data = clean_author_data(retrieve_scopus_data())
+import json
+with open('scopus_cleaned.json', 'w') as f:
+    json.dump(selected_data, f, indent=2)
+'''
 '''
 The cleaned API datais currently in a dictionary of of dictionaries, with each sub dictionary having the following format:
 {
